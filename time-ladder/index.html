@@ -149,6 +149,33 @@ h1{
 }
 .tab[aria-selected="true"]{ background:var(--ink); color:var(--ground); }
 
+/* ---- mode switch ---- */
+.modebar{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--surface);
+  border:1px solid var(--hair);
+  border-radius:12px;
+  padding:9px 10px 9px 14px;
+  box-shadow:var(--shadow);
+}
+.modebar .ml{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+.modebar .ml b{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; font-weight:600; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--muted);
+}
+.modebar .ml span{ font-size:12.5px; color:var(--muted); line-height:1.3; }
+.seg{ display:flex; gap:3px; background:var(--surface-2); border:1px solid var(--hair); border-radius:9px; padding:3px; flex:0 0 auto; }
+.seg button{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  font-family:"Archivo",Helvetica,Arial,sans-serif;
+  font-weight:700; font-size:13px;
+  color:var(--muted);
+  padding:8px 12px; border-radius:7px; min-height:38px;
+  transition:background .16s ease, color .16s ease;
+}
+.seg button[aria-pressed="true"]{ background:var(--route); color:var(--route-on); }
+
 /* ============ cards ============ */
 .card{
   background:var(--surface);
@@ -508,6 +535,17 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
   <!-- ================= PLAN ================= -->
   <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan" style="display:flex;flex-direction:column;gap:14px;">
 
+    <div class="modebar">
+      <span class="ml">
+        <b>Mode</b>
+        <span id="mode-hint">Tap through the hops yourself.</span>
+      </span>
+      <span class="seg">
+        <button type="button" id="mode-step" aria-pressed="true">Step by step</button>
+        <button type="button" id="mode-auto" aria-pressed="false">Auto</button>
+      </span>
+    </div>
+
     <section class="card">
       <div class="card-head">
         <span class="marker">1</span>
@@ -554,7 +592,7 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
 
       <div class="note spot hide" id="hour-note"></div>
 
-      <div class="btn-row">
+      <div class="btn-row" id="row-hop">
         <button class="btn" id="hop-back">&larr; Hop back 5 min</button>
         <button class="btn ghost" id="hop-reset">Start over</button>
       </div>
@@ -604,7 +642,7 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
         <span>It&rsquo;s a movie <small>Adds 15 minutes for the trailers</small></span>
       </label>
 
-      <div class="btn-row">
+      <div class="btn-row" id="row-hours">
         <button class="btn" id="do-hours">Step 1 &mdash; add the hours</button>
       </div>
 
@@ -637,7 +675,7 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
         </div>
         <div class="rail" id="rail-fwd"><div class="stops" id="stops-fwd"></div></div>
       </div>
-      <div class="btn-row">
+      <div class="btn-row" id="row-fwd">
         <button class="btn" id="hop-fwd">Hop forward 5 min &rarr;</button>
       </div>
       <div class="result hide" id="res-home">
@@ -797,7 +835,8 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
     place:"", arrive:parseTime("11:00"), ride:20,
     walked:0, pickup:null,
     starts:parseTime("12:30"), hrs:2, mins:0, movie:true,
-    endAt:null, fwd:0, homeAt:null
+    endAt:null, fwd:0, homeAt:null,
+    auto:false
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -814,8 +853,48 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
   $("tab-plan").addEventListener("click", function(){ selectTab("plan"); });
   $("tab-practice").addEventListener("click", function(){ selectTab("practice"); });
 
+  /* ---------- mode ---------- */
+  function applyMode(on){
+    S.auto = !!on;
+    $("mode-auto").setAttribute("aria-pressed", S.auto);
+    $("mode-step").setAttribute("aria-pressed", !S.auto);
+    $("mode-hint").textContent = S.auto
+      ? "Every time is worked out for you."
+      : "Tap through the hops yourself.";
+    $("row-hop").classList.toggle("hide", S.auto);
+    $("row-fwd").classList.toggle("hide", S.auto);
+    $("row-hours").classList.toggle("hide", S.auto);
+    $("hop-sub").textContent = S.auto
+      ? "Counted back for you — the line shows the whole trip backwards."
+      : "Start at the time you need to be there. Each tap moves you 5 minutes earlier.";
+    store("tl_mode", S.auto ? "auto" : "step");
+    resetBack();
+    resetEnd();
+  }
+  $("mode-auto").addEventListener("click", function(){ applyMode(true); });
+  $("mode-step").addEventListener("click", function(){ applyMode(false); });
+
+  /* Show the hour-crossing note for whatever part of the walk has happened. */
+  function updateHourNote(){
+    var el = $("hour-note"), i, a, b;
+    for (i = 1; i <= S.walked; i++){
+      a = S.arrive - (i-1)*5;
+      b = S.arrive - i*5;
+      if (hourOf(a) !== hourOf(b)){
+        el.innerHTML = "Notice the hour changed: counting back past the top of the hour turned <b>" +
+          fmt(a) + "</b> into <b>" + fmt(b) + "</b>, dropping the hour from " +
+          hourLabel(a) + " to " + hourLabel(b) + ".";
+        el.classList.remove("hide");
+        return;
+      }
+    }
+    el.classList.add("hide");
+  }
+
   /* ================= SECTION 1 + 2 : hop back ================= */
   function drawBack(){
+    if (S.auto) S.walked = S.ride/5;
+    updateHourNote();
     $("hop-need").textContent = S.ride;
     $("hop-count").textContent = S.walked * 5;
     renderLadder($("stops-back"), $("rail-back"), S.arrive, S.ride, -1, S.walked,
@@ -838,22 +917,12 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
     drawPlan();
   }
   function resetBack(){
-    S.walked = 0;
-    $("hour-note").classList.add("hide");
+    S.walked = S.auto ? S.ride/5 : 0;
     drawBack();
   }
   $("hop-back").addEventListener("click", function(){
-    var hops = S.ride/5;
-    if (S.walked >= hops) return;
-    var before = S.arrive - S.walked*5;
+    if (S.walked >= S.ride/5) return;
     S.walked++;
-    var after = S.arrive - S.walked*5;
-    if (hourOf(before) !== hourOf(after)){
-      $("hour-note").innerHTML = "You just crossed the top of the hour — that's why <b>" +
-        fmt(before) + "</b> became <b>" + fmt(after) + "</b>, and the hour went down from " +
-        hourLabel(before) + " to " + hourLabel(after) + ".";
-      $("hour-note").classList.remove("hide");
-    }
     drawBack();
   });
   $("hop-reset").addEventListener("click", resetBack);
@@ -883,6 +952,9 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
     $("res-home").classList.add("hide");
     $("do-hours").disabled = false;
     $("do-hours").textContent = "Step 1 — add the hours";
+    $("do-mins").disabled = false;
+    $("do-mins").textContent = "Step 2 — now add the minutes";
+    if (S.auto){ stepHours(); stepMins(); return; }
     drawFwd();
     drawPlan();
   }
@@ -900,19 +972,20 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
   $("mn-down").addEventListener("click", function(){ setMns(S.mins - 5); });
   $("movie").addEventListener("change", function(e){ S.movie = e.target.checked; resetEnd(); });
 
-  $("do-hours").addEventListener("click", function(){
+  function stepHours(){
     var afterHrs = S.starts + S.hrs*60;
     var m = $("end-math");
     m.innerHTML =
       '<div class="l"><em>Start time</em><b>' + fmt(S.starts) + '</b></div>' +
       '<div class="l"><em>Add ' + S.hrs + ' hour' + (S.hrs === 1 ? '' : 's') + ' &rarr; minutes stay the same</em><b>' + fmt(afterHrs) + '</b></div>';
     m.classList.remove("hide");
-    $("row-mins").classList.remove("hide");
-    this.disabled = true;
-    this.textContent = "✓ Hours added";
-  });
+    $("row-mins").classList.toggle("hide", S.auto);
+    $("do-hours").disabled = true;
+    $("do-hours").textContent = "✓ Hours added";
+  }
+  $("do-hours").addEventListener("click", stepHours);
 
-  $("do-mins").addEventListener("click", function(){
+  function stepMins(){
     var afterHrs = S.starts + S.hrs*60;
     var extra = lastMins();
     S.endAt = afterHrs + extra;
@@ -925,12 +998,13 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
     m.innerHTML += '<div class="l total"><em>' + label + '</em><b>' + fmt(S.endAt) + '</b></div>';
     $("end-time").textContent = fmt(S.endAt);
     $("res-end").classList.remove("hide");
-    this.disabled = true;
-    this.textContent = "✓ Minutes added";
+    $("do-mins").disabled = true;
+    $("do-mins").textContent = "✓ Minutes added";
     S.fwd = 0;
     drawFwd();
     drawPlan();
-  });
+  }
+  $("do-mins").addEventListener("click", stepMins);
 
   /* ================= SECTION 4 : ride home ================= */
   function drawFwd(){
@@ -944,6 +1018,7 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
       return;
     }
     card.classList.remove("asleep");
+    if (S.auto) S.fwd = 3;
     $("fwd-count").textContent = S.fwd * 5;
     renderLadder($("stops-fwd"), $("rail-fwd"), S.endAt, 15, 1, S.fwd,
                  { originTag:"Done", landTag:"Ride home" });
@@ -1127,9 +1202,7 @@ input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid 
   $("q-next").addEventListener("click", newQuestion);
 
   /* ================= boot ================= */
-  drawBack();
-  drawFwd();
-  drawPlan();
+  applyMode(store("tl_mode") === "auto");
   drawScores();
 })();
 </script>
