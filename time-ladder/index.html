@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Time Ladder">
+<meta name="theme-color" content="#EFF2F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101817" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<title>Time Ladder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ============ TOKENS: light is the base ============ */
+:root{
+  --ground:#EFF2F1;
+  --surface:#FFFFFF;
+  --surface-2:#F5F8F7;
+  --ink:#141F1D;
+  --muted:#5B6A67;
+  --hair:#D3DBD9;
+  --route:#0E6E64;
+  --route-ink:#0E6E64;
+  --route-on:#FFFFFF;
+  --signal:#B87615;
+  --signal-fill:#DE9A2E;
+  --signal-soft:#FBF0DC;
+  --ok:#2F6B4C;
+  --ok-soft:#E4F0E9;
+  --warn:#B0562F;
+  --warn-soft:#FBEBE3;
+  --shadow:0 1px 2px rgba(20,31,29,.06), 0 6px 20px rgba(20,31,29,.06);
+  --focus:#0E6E64;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101817;
+    --surface:#182221;
+    --surface-2:#1E2A28;
+    --ink:#E7EDEB;
+    --muted:#95A5A2;
+    --hair:#2C3A38;
+    --route:#2FA697;
+    --route-ink:#43BFAF;
+    --route-on:#08201E;
+    --signal:#EDB65E;
+    --signal-fill:#E0A340;
+    --signal-soft:#33291A;
+    --ok:#6FC095;
+    --ok-soft:#1B2E24;
+    --warn:#E29065;
+    --warn-soft:#33221A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    --focus:#43BFAF;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101817;
+  --surface:#182221;
+  --surface-2:#1E2A28;
+  --ink:#E7EDEB;
+  --muted:#95A5A2;
+  --hair:#2C3A38;
+  --route:#2FA697;
+  --route-ink:#43BFAF;
+  --route-on:#08201E;
+  --signal:#EDB65E;
+  --signal-fill:#E0A340;
+  --signal-soft:#33291A;
+  --ok:#6FC095;
+  --ok-soft:#1B2E24;
+  --warn:#E29065;
+  --warn-soft:#33221A;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+  --focus:#43BFAF;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+
+.wrap{
+  max-width:600px;
+  margin:0 auto;
+  padding:22px 16px 64px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* ============ header ============ */
+.masthead{ display:flex; flex-direction:column; gap:3px; }
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--route-ink);
+}
+h1{
+  font-family:"Archivo",Helvetica,Arial,sans-serif;
+  font-weight:800;
+  font-size:clamp(30px,8vw,40px);
+  line-height:1.02;
+  letter-spacing:-.02em;
+  margin:0;
+  text-wrap:balance;
+}
+.dek{ color:var(--muted); font-size:14.5px; margin:2px 0 0; max-width:46ch; }
+
+/* ============ tabs ============ */
+.tabs{
+  display:flex;
+  gap:4px;
+  background:var(--surface-2);
+  border:1px solid var(--hair);
+  border-radius:11px;
+  padding:4px;
+  margin-top:4px;
+}
+.tab{
+  flex:1;
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-family:"Archivo",Helvetica,Arial,sans-serif;
+  font-weight:700;
+  font-size:14px;
+  letter-spacing:.01em;
+  padding:9px 8px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:background .16s ease,color .16s ease;
+}
+.tab[aria-selected="true"]{ background:var(--ink); color:var(--ground); }
+
+/* ============ cards ============ */
+.card{
+  background:var(--surface);
+  border:1px solid var(--hair);
+  border-radius:14px;
+  padding:16px 16px 18px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.card.asleep{ opacity:.5; }
+.card-head{ display:flex; align-items:flex-start; gap:11px; }
+.marker{
+  flex:0 0 auto;
+  width:26px; height:26px;
+  border-radius:50%;
+  background:var(--route);
+  color:var(--route-on);
+  font-family:"IBM Plex Mono",monospace;
+  font-weight:600;
+  font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+  margin-top:1px;
+}
+h2{
+  font-family:"Archivo",Helvetica,Arial,sans-serif;
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:-.01em;
+  margin:0;
+  line-height:1.25;
+  text-wrap:balance;
+}
+.sub{ color:var(--muted); font-size:13.5px; margin:3px 0 0; }
+
+/* ============ form bits ============ */
+.field{ display:flex; flex-direction:column; gap:5px; }
+.field > label,.flabel{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+input[type="text"],input[type="time"]{
+  font-family:"IBM Plex Sans",sans-serif;
+  font-size:16px;
+  color:var(--ink);
+  background:var(--surface-2);
+  border:1.5px solid var(--hair);
+  border-radius:9px;
+  padding:11px 12px;
+  width:100%;
+  min-height:46px;
+}
+input[type="time"]{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums; }
+input:focus-visible,button:focus-visible,.chk:focus-within{ outline:2.5px solid var(--focus); outline-offset:2px; }
+
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+@media (max-width:400px){ .grid2{ grid-template-columns:1fr; } }
+
+/* stepper */
+.stepper{ display:flex; align-items:stretch; gap:0; }
+.stepper button{
+  appearance:none;
+  border:1.5px solid var(--hair);
+  background:var(--surface-2);
+  color:var(--ink);
+  font-family:"Archivo",sans-serif;
+  font-size:20px; font-weight:700;
+  width:46px; min-height:46px;
+  cursor:pointer;
+  line-height:1;
+}
+.stepper button:first-child{ border-radius:9px 0 0 9px; }
+.stepper button:last-child{ border-radius:0 9px 9px 0; }
+.stepper button:hover{ background:var(--hair); }
+.stepper .val{
+  flex:1;
+  border:1.5px solid var(--hair);
+  border-left:0; border-right:0;
+  background:var(--surface);
+  display:flex; align-items:center; justify-content:center;
+  gap:5px;
+  font-family:"IBM Plex Mono",monospace;
+  font-weight:600; font-size:16px;
+  font-variant-numeric:tabular-nums;
+}
+.stepper .val small{ font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:12.5px; color:var(--muted); }
+
+/* toggle */
+.toggle{
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface-2);
+  border:1.5px solid var(--hair);
+  border-radius:9px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-size:14.5px;
+}
+.toggle input{ width:19px; height:19px; accent-color:var(--route); margin:0; flex:0 0 auto; }
+.toggle span small{ display:block; color:var(--muted); font-size:12.5px; }
+
+/* ============ buttons ============ */
+.btn{
+  appearance:none; cursor:pointer;
+  font-family:"Archivo",Helvetica,Arial,sans-serif;
+  font-weight:700; font-size:15px;
+  border-radius:10px;
+  padding:12px 16px;
+  min-height:48px;
+  border:1.5px solid var(--route);
+  background:var(--route);
+  color:var(--route-on);
+  transition:transform .1s ease, filter .16s ease;
+}
+.btn:hover{ filter:brightness(1.08); }
+.btn:active{ transform:translateY(1px); }
+.btn.ghost{ background:transparent; color:var(--route-ink); }
+.btn.ghost:hover{ background:var(--surface-2); filter:none; }
+.btn[disabled]{ opacity:.42; cursor:not-allowed; transform:none; filter:none; }
+.btn-row{ display:flex; gap:9px; flex-wrap:wrap; }
+.btn-row .btn{ flex:1 1 auto; }
+
+/* ============ THE ROUTE LINE ============ */
+.ladder-shell{
+  background:var(--surface-2);
+  border:1px solid var(--hair);
+  border-radius:12px;
+  padding:14px 0 10px;
+  overflow:hidden;
+}
+.counter{
+  display:flex; align-items:baseline; justify-content:center; gap:7px;
+  padding:0 14px 11px;
+  font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;
+}
+.counter b{ font-size:24px; font-weight:600; color:var(--route-ink); letter-spacing:-.01em; }
+.counter span{ font-size:13px; color:var(--muted); }
+.rail{
+  overflow-x:auto;
+  overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  padding:0 26px;
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 26px,#000 calc(100% - 26px),transparent 100%);
+  mask-image:linear-gradient(to right,transparent 0,#000 26px,#000 calc(100% - 26px),transparent 100%);
+}
+.rail::-webkit-scrollbar{ display:none; }
+.stops{ display:flex; align-items:flex-start; width:max-content; position:relative; }
+.stop{
+  flex:0 0 68px;
+  display:flex; flex-direction:column; align-items:center; gap:0;
+  position:relative;
+}
+.stop .seg{
+  position:absolute; top:18px; left:0; right:0; height:3px;
+  background:var(--hair);
+}
+.stop:first-child .seg{ left:50%; }
+.stop:last-child .seg{ right:50%; }
+.stop.walked .seg{ background:var(--route); }
+.stop .dot{
+  position:relative; z-index:2;
+  width:13px; height:13px; border-radius:50%;
+  background:var(--surface);
+  border:3px solid var(--hair);
+  margin-top:10px;
+  transition:transform .18s ease, background .18s ease, border-color .18s ease;
+}
+.stop.walked .dot{ border-color:var(--route); }
+.stop.here .dot{
+  width:21px; height:21px; margin-top:6px;
+  background:var(--route); border-color:var(--route);
+  box-shadow:0 0 0 5px color-mix(in srgb, var(--route) 22%, transparent);
+}
+.stop.dest .dot{
+  background:var(--signal-fill); border-color:var(--signal-fill);
+}
+.stop.landed .dot{
+  width:21px; height:21px; margin-top:6px;
+  background:var(--signal-fill); border-color:var(--signal-fill);
+  box-shadow:0 0 0 5px color-mix(in srgb, var(--signal-fill) 30%, transparent);
+}
+.stop .t{
+  margin-top:9px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12.5px; font-weight:600;
+  font-variant-numeric:tabular-nums;
+  color:var(--muted);
+  white-space:nowrap;
+}
+.stop.walked .t,.stop.here .t{ color:var(--ink); }
+.stop.landed .t{ color:var(--signal); }
+.stop .tag{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-top:3px;
+  min-height:13px;
+  color:var(--signal);
+  white-space:nowrap;
+}
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; animation:none !important; scroll-behavior:auto !important; }
+}
+
+/* ============ result + notes ============ */
+.result{
+  display:flex; align-items:center; gap:13px;
+  background:var(--signal-soft);
+  border:2px solid var(--signal-fill);
+  border-radius:12px;
+  padding:13px 15px;
+}
+.result .ico{ font-size:22px; line-height:1; flex:0 0 auto; }
+.result .txt{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+.result .lab{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; font-weight:600; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--signal);
+}
+.result .big{
+  font-family:"Archivo",sans-serif;
+  font-weight:800; font-size:27px; letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+  line-height:1.1;
+}
+.note{
+  font-size:13px; color:var(--muted);
+  border-left:3px solid var(--hair);
+  padding-left:11px;
+}
+.note.spot{
+  border-left-color:var(--signal-fill);
+  color:var(--ink);
+  background:var(--signal-soft);
+  padding:9px 11px;
+  border-radius:0 8px 8px 0;
+}
+.math{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:15px; font-weight:500;
+  font-variant-numeric:tabular-nums;
+  background:var(--surface-2);
+  border:1px solid var(--hair);
+  border-radius:9px;
+  padding:11px 13px;
+  display:flex; flex-direction:column; gap:7px;
+}
+.math .l{ display:flex; justify-content:space-between; gap:12px; align-items:baseline; flex-wrap:wrap; }
+.math .l em{ font-family:"IBM Plex Sans",sans-serif; font-style:normal; font-size:12.5px; color:var(--muted); }
+.math .l b{ color:var(--route-ink); font-weight:600; }
+.math .l.total b{ color:var(--signal); font-size:18px; }
+
+.hide{ display:none !important; }
+
+/* ============ summary ============ */
+.plan-list{ display:flex; flex-direction:column; gap:0; }
+.plan-row{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  padding:11px 0;
+  border-bottom:1px solid var(--hair);
+}
+.plan-row:last-child{ border-bottom:0; }
+.plan-row .k{ font-size:14px; color:var(--muted); }
+.plan-row .v{
+  font-family:"IBM Plex Mono",monospace;
+  font-weight:600; font-size:17px;
+  font-variant-numeric:tabular-nums;
+  text-align:right;
+}
+.plan-row.key .k{ color:var(--ink); font-weight:600; }
+.plan-row.key .v{ color:var(--signal); font-size:19px; }
+.empty{ color:var(--muted); font-size:14px; font-style:italic; }
+
+.chk{ display:flex; align-items:flex-start; gap:10px; padding:7px 0; font-size:14.5px; line-height:1.4; cursor:pointer; }
+.chk input{ width:19px; height:19px; margin:2px 0 0; accent-color:var(--ok); flex:0 0 auto; }
+.chk input:checked + span{ color:var(--muted); text-decoration:line-through; }
+
+/* ============ practice ============ */
+.q{
+  font-family:"Archivo",sans-serif;
+  font-size:19px; font-weight:600; line-height:1.35;
+  letter-spacing:-.01em;
+  text-wrap:balance;
+}
+.q b{ color:var(--route-ink); font-weight:800; font-variant-numeric:tabular-nums; }
+.opts{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.opt{
+  appearance:none; cursor:pointer;
+  font-family:"IBM Plex Mono",monospace;
+  font-weight:600; font-size:18px;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink);
+  background:var(--surface-2);
+  border:1.5px solid var(--hair);
+  border-radius:10px;
+  padding:15px 8px;
+  min-height:56px;
+  transition:border-color .14s ease, background .14s ease;
+}
+.opt:hover:not([disabled]){ border-color:var(--route); }
+.opt[disabled]{ cursor:default; }
+.opt.right{ background:var(--ok-soft); border-color:var(--ok); color:var(--ok); }
+.opt.wrong{ background:var(--warn-soft); border-color:var(--warn); color:var(--warn); }
+.opt.dim{ opacity:.45; }
+.verdict{
+  border-radius:10px; padding:11px 13px;
+  font-size:14.5px; line-height:1.45;
+  border:1.5px solid;
+}
+.verdict.good{ background:var(--ok-soft); border-color:var(--ok); color:var(--ok); }
+.verdict.oops{ background:var(--warn-soft); border-color:var(--warn); color:var(--warn); }
+.verdict b{ font-weight:700; }
+.scorebar{
+  display:flex; gap:8px;
+}
+.score{
+  flex:1;
+  background:var(--surface-2);
+  border:1px solid var(--hair);
+  border-radius:10px;
+  padding:9px 11px;
+  display:flex; flex-direction:column; gap:1px;
+}
+.score .n{
+  font-family:"Archivo",sans-serif; font-weight:800; font-size:22px;
+  font-variant-numeric:tabular-nums; line-height:1.1;
+}
+.score .l{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted);
+}
+.foot{ color:var(--muted); font-size:12.5px; text-align:center; padding-top:6px; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Plan the ride &middot; count the hops</span>
+    <h1>Time Ladder</h1>
+    <p class="dek">Work out when to book your Uber without doing any subtraction. Just hop backwards, five minutes at a time.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab-plan" role="tab" aria-selected="true" aria-controls="view-plan">Plan a trip</button>
+    <button class="tab" id="tab-practice" role="tab" aria-selected="false" aria-controls="view-practice">Practice</button>
+  </div>
+
+  <!-- ================= PLAN ================= -->
+  <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan" style="display:flex;flex-direction:column;gap:14px;">
+
+    <section class="card">
+      <div class="card-head">
+        <span class="marker">1</span>
+        <div>
+          <h2>Where are you going?</h2>
+          <p class="sub">Check the Uber app for the drive time, then round it up to the next 5 minutes. Rounding up is your cushion.</p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="place">Going to</label>
+        <input type="text" id="place" placeholder="Fairfax Corner" autocomplete="off">
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="arrive">Need to be there at</label>
+          <input type="time" id="arrive" step="300" value="11:00">
+        </div>
+        <div class="field">
+          <span class="flabel">Ride takes about</span>
+          <div class="stepper">
+            <button type="button" id="ride-down" aria-label="Five minutes less">&minus;</button>
+            <div class="val" aria-live="polite"><span id="ride-val">20</span> <small>min</small></div>
+            <button type="button" id="ride-up" aria-label="Five minutes more">+</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="card-hop">
+      <div class="card-head">
+        <span class="marker">2</span>
+        <div>
+          <h2>Hop back to your pickup time</h2>
+          <p class="sub" id="hop-sub">Start at the time you need to be there. Each tap moves you 5 minutes earlier.</p>
+        </div>
+      </div>
+
+      <div class="ladder-shell">
+        <div class="counter">
+          <b id="hop-count">0</b><span>of <span id="hop-need">20</span> minutes counted back</span>
+        </div>
+        <div class="rail" id="rail-back"><div class="stops" id="stops-back"></div></div>
+      </div>
+
+      <div class="note spot hide" id="hour-note"></div>
+
+      <div class="btn-row">
+        <button class="btn" id="hop-back">&larr; Hop back 5 min</button>
+        <button class="btn ghost" id="hop-reset">Start over</button>
+      </div>
+
+      <div class="result hide" id="res-pickup">
+        <span class="ico">&#128663;</span>
+        <span class="txt">
+          <span class="lab">Pick me up at home at</span>
+          <span class="big" id="pickup-time">&mdash;</span>
+        </span>
+      </div>
+      <p class="note hide" id="req-note">Actually <b>request</b> the ride about 5 minutes before that &mdash; a car needs a few minutes to reach you.</p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="marker">3</span>
+        <div>
+          <h2>When are you done?</h2>
+          <p class="sub">Add the hours first. Then the minutes. Never both at once.</p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="starts">The thing starts at</label>
+        <input type="time" id="starts" step="300" value="12:30">
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <span class="flabel">It lasts &mdash; hours</span>
+          <div class="stepper">
+            <button type="button" id="hr-down" aria-label="One hour less">&minus;</button>
+            <div class="val" aria-live="polite"><span id="hr-val">2</span> <small>hr</small></div>
+            <button type="button" id="hr-up" aria-label="One hour more">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel">&hellip; and minutes</span>
+          <div class="stepper">
+            <button type="button" id="mn-down" aria-label="Five minutes less">&minus;</button>
+            <div class="val" aria-live="polite"><span id="mn-val">0</span> <small>min</small></div>
+            <button type="button" id="mn-up" aria-label="Five minutes more">+</button>
+          </div>
+        </div>
+      </div>
+      <label class="toggle" for="movie">
+        <input type="checkbox" id="movie" checked>
+        <span>It&rsquo;s a movie <small>Adds 15 minutes for the trailers</small></span>
+      </label>
+
+      <div class="btn-row">
+        <button class="btn" id="do-hours">Step 1 &mdash; add the hours</button>
+      </div>
+
+      <div class="math hide" id="end-math"></div>
+
+      <div class="btn-row hide" id="row-mins">
+        <button class="btn" id="do-mins">Step 2 &mdash; now add the minutes</button>
+      </div>
+
+      <div class="result hide" id="res-end">
+        <span class="ico">&#127871;</span>
+        <span class="txt">
+          <span class="lab">You&rsquo;re done at</span>
+          <span class="big" id="end-time">&mdash;</span>
+        </span>
+      </div>
+    </section>
+
+    <section class="card" id="card-home">
+      <div class="card-head">
+        <span class="marker">4</span>
+        <div>
+          <h2>Book the ride home</h2>
+          <p class="sub">Add 15 minutes to the time you finish, so you wait <em>inside</em> instead of alone on the sidewalk.</p>
+        </div>
+      </div>
+      <div class="ladder-shell">
+        <div class="counter">
+          <b id="fwd-count">0</b><span>of 15 minutes counted forward</span>
+        </div>
+        <div class="rail" id="rail-fwd"><div class="stops" id="stops-fwd"></div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="hop-fwd">Hop forward 5 min &rarr;</button>
+      </div>
+      <div class="result hide" id="res-home">
+        <span class="ico">&#127968;</span>
+        <span class="txt">
+          <span class="lab">Pick me up for the ride home at</span>
+          <span class="big" id="home-time">&mdash;</span>
+        </span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="marker">5</span>
+        <div>
+          <h2>Your plan</h2>
+          <p class="sub">Screenshot this, or copy it and text it to Mom.</p>
+        </div>
+      </div>
+      <div class="plan-list" id="plan-list"></div>
+      <div class="btn-row">
+        <button class="btn ghost" id="copy-plan">Copy plan as text</button>
+      </div>
+      <p class="note hide" id="copy-msg"></p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="marker">&#10003;</span>
+        <div>
+          <h2>Before you get in the car</h2>
+          <p class="sub">Every single time. No exceptions, even when you&rsquo;re in a hurry.</p>
+        </div>
+      </div>
+      <div>
+        <label class="chk"><input type="checkbox"><span>Wait <b>inside</b> until the app says the car is here.</span></label>
+        <label class="chk"><input type="checkbox"><span>The <b>license plate</b> matches the app.</span></label>
+        <label class="chk"><input type="checkbox"><span>The <b>car make and color</b> match.</span></label>
+        <label class="chk"><input type="checkbox"><span>The <b>driver&rsquo;s face</b> matches the photo.</span></label>
+        <label class="chk"><input type="checkbox"><span>Ask <b>&ldquo;Who are you here for?&rdquo;</b> and let them say your name. Don&rsquo;t say it first.</span></label>
+        <label class="chk"><input type="checkbox"><span>Sit in the <b>back seat</b>.</span></label>
+        <label class="chk"><input type="checkbox"><span><b>Share your trip</b> with Mom in the app.</span></label>
+        <label class="chk"><input type="checkbox"><span>If anything feels off, <b>don&rsquo;t get in</b>. Cancel and order another one.</span></label>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= PRACTICE ================= -->
+  <div id="view-practice" role="tabpanel" aria-labelledby="tab-practice" style="display:none;flex-direction:column;gap:14px;">
+    <div class="scorebar">
+      <div class="score"><span class="n" id="sc-streak">0</span><span class="l">Streak</span></div>
+      <div class="score"><span class="n" id="sc-best">0</span><span class="l">Best streak</span></div>
+      <div class="score"><span class="n" id="sc-right">0/0</span><span class="l">Correct</span></div>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="marker">?</span>
+        <div>
+          <h2>What time is the pickup?</h2>
+          <p class="sub">Count back on the ladder in your head, then pick an answer.</p>
+        </div>
+      </div>
+      <p class="q" id="q-text"></p>
+      <div class="opts" id="q-opts"></div>
+      <div class="verdict hide" id="q-verdict"></div>
+      <div class="ladder-shell hide" id="q-ladder-shell">
+        <div class="counter"><b id="q-count">0</b><span>of <span id="q-need">0</span> minutes counted back</span></div>
+        <div class="rail" id="rail-q"><div class="stops" id="stops-q"></div></div>
+      </div>
+      <div class="btn-row hide" id="q-next-row">
+        <button class="btn" id="q-next">Next question</button>
+      </div>
+    </section>
+    <p class="foot">Getting these right five in a row means you&rsquo;ve got it.</p>
+  </div>
+
+  <p class="foot">Made for planning real rides. Always double-check the car before you get in.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- time helpers ---------- */
+  var DAY = 1440;
+  function norm(m){ return ((m % DAY) + DAY) % DAY; }
+  function fmt(m){
+    m = norm(m);
+    var h = Math.floor(m/60), mi = m%60;
+    var ap = h < 12 ? "am" : "pm";
+    var h12 = h % 12; if (h12 === 0) h12 = 12;
+    return h12 + ":" + (mi < 10 ? "0" : "") + mi + " " + ap;
+  }
+  function hourOf(m){ return Math.floor(norm(m)/60); }
+  function hourLabel(m){ var h = hourOf(m) % 12; return h === 0 ? 12 : h; }
+  function parseTime(v){
+    if (!v || v.indexOf(":") < 0) return null;
+    var p = v.split(":");
+    var h = parseInt(p[0],10), mi = parseInt(p[1],10);
+    if (isNaN(h) || isNaN(mi)) return null;
+    return h*60 + mi;
+  }
+  function store(k, v){
+    try { if (v === undefined) return window.localStorage.getItem(k); window.localStorage.setItem(k, v); }
+    catch(e){ return null; }
+  }
+
+  /* ---------- generic ladder renderer ---------- */
+  /* dir: -1 back in time, +1 forward. Renders stops with `pad` extra beyond each end. */
+  function renderLadder(stopsEl, railEl, origin, totalMin, dir, walked, opts){
+    opts = opts || {};
+    var hops = totalMin / 5;
+    var pad = 1;
+    var first, count = hops + 1 + pad*2;
+    if (dir < 0) first = origin - (hops + pad)*5; else first = origin - pad*5;
+
+    var html = "", i, t, cls, tag, landedAt = origin + dir*totalMin;
+    var doneWalking = walked >= hops;
+
+    for (i = 0; i < count; i++){
+      t = first + i*5;
+      cls = "stop";
+      tag = "";
+      var stepsFromOrigin = Math.round((t - origin) / 5) * dir; // >0 means along travel direction
+      if (stepsFromOrigin > 0 && stepsFromOrigin <= walked) cls += " walked";
+      if (stepsFromOrigin === 0 && walked > 0) cls += " walked"; // keep the line unbroken
+      if (t === origin) { cls += " dest"; tag = opts.originTag || "Be there"; }
+      if (stepsFromOrigin === walked && walked > 0 && !doneWalking) cls += " here";
+      if (doneWalking && t === landedAt){ cls += " landed"; tag = opts.landTag || "Pick up"; }
+      html += '<div class="' + cls + '" data-t="' + t + '">' +
+                '<div class="seg"></div><div class="dot"></div>' +
+                '<div class="t">' + fmt(t).replace(" "," ") + '</div>' +
+                '<div class="tag">' + tag + '</div>' +
+              '</div>';
+    }
+    stopsEl.innerHTML = html;
+
+    // keep the active stop centered without scrolling the page
+    // While walking, follow the marker. Once finished, centre the whole journey if it
+    // fits — so start and landing are both visible — otherwise centre the answer.
+    var activeT = origin + dir * walked * 5;
+    if (doneWalking && railEl){
+      var one = stopsEl.firstChild ? stopsEl.firstChild.offsetWidth : 68;
+      var fits = (hops + 1) * one <= railEl.clientWidth;
+      activeT = fits ? origin + dir * (Math.round(hops/2) * 5) : landedAt;
+    }
+    var node = stopsEl.querySelector('[data-t="' + activeT + '"]');
+    if (node && railEl){
+      var nr = node.getBoundingClientRect(), rr = railEl.getBoundingClientRect();
+      railEl.scrollLeft += (nr.left - rr.left) - (rr.width/2 - nr.width/2);
+    }
+  }
+
+  /* ================= STATE ================= */
+  var S = {
+    place:"", arrive:parseTime("11:00"), ride:20,
+    walked:0, pickup:null,
+    starts:parseTime("12:30"), hrs:2, mins:0, movie:true,
+    endAt:null, fwd:0, homeAt:null
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- tabs ---------- */
+  function selectTab(which){
+    var isPlan = which === "plan";
+    $("tab-plan").setAttribute("aria-selected", isPlan);
+    $("tab-practice").setAttribute("aria-selected", !isPlan);
+    $("view-plan").style.display = isPlan ? "flex" : "none";
+    $("view-practice").style.display = isPlan ? "none" : "flex";
+    if (!isPlan && !Q.current) newQuestion();
+  }
+  $("tab-plan").addEventListener("click", function(){ selectTab("plan"); });
+  $("tab-practice").addEventListener("click", function(){ selectTab("practice"); });
+
+  /* ================= SECTION 1 + 2 : hop back ================= */
+  function drawBack(){
+    $("hop-need").textContent = S.ride;
+    $("hop-count").textContent = S.walked * 5;
+    renderLadder($("stops-back"), $("rail-back"), S.arrive, S.ride, -1, S.walked,
+                 { originTag:"Be there", landTag:"Pick up" });
+
+    var hops = S.ride/5, done = S.walked >= hops;
+    $("hop-back").disabled = done;
+    $("hop-back").textContent = done ? "✓ That's your pickup time" : "← Hop back 5 min";
+
+    if (done){
+      S.pickup = S.arrive - S.ride;
+      $("pickup-time").textContent = fmt(S.pickup);
+      $("res-pickup").classList.remove("hide");
+      $("req-note").classList.remove("hide");
+    } else {
+      S.pickup = null;
+      $("res-pickup").classList.add("hide");
+      $("req-note").classList.add("hide");
+    }
+    drawPlan();
+  }
+  function resetBack(){
+    S.walked = 0;
+    $("hour-note").classList.add("hide");
+    drawBack();
+  }
+  $("hop-back").addEventListener("click", function(){
+    var hops = S.ride/5;
+    if (S.walked >= hops) return;
+    var before = S.arrive - S.walked*5;
+    S.walked++;
+    var after = S.arrive - S.walked*5;
+    if (hourOf(before) !== hourOf(after)){
+      $("hour-note").innerHTML = "You just crossed the top of the hour — that's why <b>" +
+        fmt(before) + "</b> became <b>" + fmt(after) + "</b>, and the hour went down from " +
+        hourLabel(before) + " to " + hourLabel(after) + ".";
+      $("hour-note").classList.remove("hide");
+    }
+    drawBack();
+  });
+  $("hop-reset").addEventListener("click", resetBack);
+
+  $("place").addEventListener("input", function(e){ S.place = e.target.value; drawPlan(); });
+  $("arrive").addEventListener("change", function(e){
+    var v = parseTime(e.target.value);
+    if (v === null) return;
+    S.arrive = Math.round(v/5)*5;
+    resetBack();
+  });
+  function setRide(n){
+    S.ride = Math.min(90, Math.max(5, n));
+    $("ride-val").textContent = S.ride;
+    resetBack();
+  }
+  $("ride-up").addEventListener("click", function(){ setRide(S.ride + 5); });
+  $("ride-down").addEventListener("click", function(){ setRide(S.ride - 5); });
+
+  /* ================= SECTION 3 : when are you done ================= */
+  function lastMins(){ return S.mins + (S.movie ? 15 : 0); }
+  function resetEnd(){
+    S.endAt = null; S.fwd = 0; S.homeAt = null;
+    $("end-math").classList.add("hide");
+    $("row-mins").classList.add("hide");
+    $("res-end").classList.add("hide");
+    $("res-home").classList.add("hide");
+    $("do-hours").disabled = false;
+    $("do-hours").textContent = "Step 1 — add the hours";
+    drawFwd();
+    drawPlan();
+  }
+  $("starts").addEventListener("change", function(e){
+    var v = parseTime(e.target.value);
+    if (v === null) return;
+    S.starts = Math.round(v/5)*5;
+    resetEnd();
+  });
+  function setHrs(n){ S.hrs = Math.min(8, Math.max(0, n)); $("hr-val").textContent = S.hrs; resetEnd(); }
+  function setMns(n){ S.mins = Math.min(55, Math.max(0, n)); $("mn-val").textContent = S.mins; resetEnd(); }
+  $("hr-up").addEventListener("click", function(){ setHrs(S.hrs + 1); });
+  $("hr-down").addEventListener("click", function(){ setHrs(S.hrs - 1); });
+  $("mn-up").addEventListener("click", function(){ setMns(S.mins + 5); });
+  $("mn-down").addEventListener("click", function(){ setMns(S.mins - 5); });
+  $("movie").addEventListener("change", function(e){ S.movie = e.target.checked; resetEnd(); });
+
+  $("do-hours").addEventListener("click", function(){
+    var afterHrs = S.starts + S.hrs*60;
+    var m = $("end-math");
+    m.innerHTML =
+      '<div class="l"><em>Start time</em><b>' + fmt(S.starts) + '</b></div>' +
+      '<div class="l"><em>Add ' + S.hrs + ' hour' + (S.hrs === 1 ? '' : 's') + ' &rarr; minutes stay the same</em><b>' + fmt(afterHrs) + '</b></div>';
+    m.classList.remove("hide");
+    $("row-mins").classList.remove("hide");
+    this.disabled = true;
+    this.textContent = "✓ Hours added";
+  });
+
+  $("do-mins").addEventListener("click", function(){
+    var afterHrs = S.starts + S.hrs*60;
+    var extra = lastMins();
+    S.endAt = afterHrs + extra;
+    var m = $("end-math");
+    var label;
+    if (S.movie && S.mins > 0) label = 'Add ' + S.mins + ' min, plus 15 for the trailers = ' + extra + ' min';
+    else if (S.movie)          label = 'Add 15 min for the trailers';
+    else if (extra === 0)      label = 'No extra minutes to add';
+    else                       label = 'Add ' + extra + ' min';
+    m.innerHTML += '<div class="l total"><em>' + label + '</em><b>' + fmt(S.endAt) + '</b></div>';
+    $("end-time").textContent = fmt(S.endAt);
+    $("res-end").classList.remove("hide");
+    this.disabled = true;
+    this.textContent = "✓ Minutes added";
+    S.fwd = 0;
+    drawFwd();
+    drawPlan();
+  });
+
+  /* ================= SECTION 4 : ride home ================= */
+  function drawFwd(){
+    var card = $("card-home");
+    if (S.endAt === null){
+      card.classList.add("asleep");
+      $("hop-fwd").disabled = true;
+      $("fwd-count").textContent = "0";
+      $("stops-fwd").innerHTML = '<div class="stop"><div class="seg"></div><div class="dot"></div><div class="t">&mdash;&mdash;</div><div class="tag"></div></div>';
+      $("res-home").classList.add("hide");
+      return;
+    }
+    card.classList.remove("asleep");
+    $("fwd-count").textContent = S.fwd * 5;
+    renderLadder($("stops-fwd"), $("rail-fwd"), S.endAt, 15, 1, S.fwd,
+                 { originTag:"Done", landTag:"Ride home" });
+    var done = S.fwd >= 3;
+    $("hop-fwd").disabled = done;
+    $("hop-fwd").textContent = done ? "✓ That's your ride home" : "Hop forward 5 min →";
+    if (done){
+      S.homeAt = S.endAt + 15;
+      $("home-time").textContent = fmt(S.homeAt);
+      $("res-home").classList.remove("hide");
+    } else {
+      S.homeAt = null;
+      $("res-home").classList.add("hide");
+    }
+  }
+  $("hop-fwd").addEventListener("click", function(){
+    if (S.fwd >= 3) return;
+    S.fwd++;
+    drawFwd();
+    drawPlan();
+  });
+
+  /* ================= SECTION 5 : the plan ================= */
+  function planRows(){
+    var rows = [];
+    if (S.pickup !== null) rows.push(["Uber picks you up at home", fmt(S.pickup), true]);
+    rows.push([S.place ? "Be at " + S.place : "Be there", fmt(S.arrive), false]);
+    if (S.endAt !== null) rows.push(["You're finished", fmt(S.endAt), false]);
+    if (S.homeAt !== null) rows.push(["Uber picks you up to go home", fmt(S.homeAt), true]);
+    return rows;
+  }
+  function drawPlan(){
+    var rows = planRows(), el = $("plan-list");
+    if (S.pickup === null && S.endAt === null){
+      el.innerHTML = '<p class="empty">Work through the steps above and your times will collect here.</p>';
+      return;
+    }
+    el.innerHTML = rows.map(function(r){
+      return '<div class="plan-row' + (r[2] ? ' key' : '') + '"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>';
+    }).join("");
+  }
+  $("copy-plan").addEventListener("click", function(){
+    var rows = planRows();
+    if (!rows.length) return;
+    var txt = (S.place ? S.place : "My trip") + "\n" +
+      rows.map(function(r){ return r[0] + ": " + r[1]; }).join("\n");
+    var msg = $("copy-msg");
+    msg.classList.remove("hide");
+    try {
+      navigator.clipboard.writeText(txt).then(function(){
+        msg.textContent = "Copied. Paste it into a text message.";
+      }, function(){
+        msg.textContent = "Couldn't copy automatically — screenshot the list above instead.";
+      });
+    } catch(e){
+      msg.textContent = "Couldn't copy automatically — screenshot the list above instead.";
+    }
+  });
+
+  /* ================= PRACTICE ================= */
+  var Q = { current:null, streak:0, best:0, right:0, asked:0, timer:null };
+  var PLACES = ["the mall","practice","Fairfax Corner","the library","your friend's house","the movies","the dentist","work","the pool","the coffee shop"];
+
+  (function loadScores(){
+    var b = store("tl_best");
+    if (b !== null && b !== undefined && !isNaN(parseInt(b,10))) Q.best = parseInt(b,10);
+    $("sc-best").textContent = Q.best;
+  })();
+
+  function drawScores(){
+    $("sc-streak").textContent = Q.streak;
+    $("sc-best").textContent = Q.best;
+    $("sc-right").textContent = Q.right + "/" + Q.asked;
+  }
+
+  function makeOptions(arrive, ride){
+    var correct = norm(arrive - ride);
+    var set = [correct], push = function(v){
+      v = norm(v);
+      if (set.indexOf(v) < 0) set.push(v);
+    };
+    // classic error 1: kept the hour, only changed the minutes
+    var keptHour = hourOf(arrive)*60 + (correct % 60);
+    push(keptHour);
+    // classic error 2: added instead of counting back
+    push(arrive + ride);
+    // classic error 3: one hop short
+    push(correct + 5);
+    // classic error 4: one hop too far
+    push(correct - 5);
+    var opts = set.slice(0,4);
+    for (var i = opts.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = opts[i]; opts[i] = opts[j]; opts[j] = t;
+    }
+    return { correct:correct, opts:opts };
+  }
+
+  function newQuestion(){
+    if (Q.timer){ clearInterval(Q.timer); Q.timer = null; }
+    var hour = 9 + Math.floor(Math.random()*11);           // 9am - 7pm
+    var minute = [0,0,0,15,30,45][Math.floor(Math.random()*6)]; // favour o'clock
+    var arrive = hour*60 + minute;
+    var ride = (2 + Math.floor(Math.random()*8))*5;        // 10 - 45 min
+    var place = PLACES[Math.floor(Math.random()*PLACES.length)];
+    var made = makeOptions(arrive, ride);
+    Q.current = { arrive:arrive, ride:ride, place:place, correct:made.correct };
+
+    $("q-text").innerHTML = "You need to be at <b>" + place + "</b> by <b>" + fmt(arrive) +
+      "</b>. The ride takes <b>" + ride + " minutes</b>. What time should the Uber pick you up?";
+
+    $("q-opts").innerHTML = made.opts.map(function(v){
+      return '<button class="opt" type="button" data-v="' + v + '">' + fmt(v) + '</button>';
+    }).join("");
+
+    $("q-verdict").classList.add("hide");
+    $("q-ladder-shell").classList.add("hide");
+    $("q-next-row").classList.add("hide");
+    $("stops-q").innerHTML = "";
+  }
+
+  function walkQuestionLadder(){
+    var c = Q.current, hops = c.ride/5, step = 0;
+    $("q-need").textContent = c.ride;
+    $("q-count").textContent = "0";
+    $("q-ladder-shell").classList.remove("hide");
+    renderLadder($("stops-q"), $("rail-q"), c.arrive, c.ride, -1, 0, { originTag:"Be there", landTag:"Pick up" });
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce){
+      $("q-count").textContent = c.ride;
+      renderLadder($("stops-q"), $("rail-q"), c.arrive, c.ride, -1, hops, { originTag:"Be there", landTag:"Pick up" });
+      return;
+    }
+    Q.timer = setInterval(function(){
+      step++;
+      $("q-count").textContent = step*5;
+      renderLadder($("stops-q"), $("rail-q"), c.arrive, c.ride, -1, step, { originTag:"Be there", landTag:"Pick up" });
+      if (step >= hops){ clearInterval(Q.timer); Q.timer = null; }
+    }, 420);
+  }
+
+  $("q-opts").addEventListener("click", function(e){
+    var btn = e.target.closest(".opt");
+    if (!btn || btn.disabled) return;
+    var chosen = parseInt(btn.getAttribute("data-v"), 10);
+    var c = Q.current, ok = chosen === c.correct;
+
+    Array.prototype.forEach.call(this.querySelectorAll(".opt"), function(b){
+      b.disabled = true;
+      var v = parseInt(b.getAttribute("data-v"), 10);
+      if (v === c.correct) b.classList.add("right");
+      else if (b === btn) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+
+    Q.asked++;
+    if (ok){ Q.right++; Q.streak++; if (Q.streak > Q.best){ Q.best = Q.streak; store("tl_best", String(Q.best)); } }
+    else { Q.streak = 0; }
+    drawScores();
+
+    var v = $("q-verdict");
+    v.className = "verdict " + (ok ? "good" : "oops");
+    if (ok){
+      v.innerHTML = "<b>Right.</b> " + fmt(c.arrive) + " counted back " + c.ride + " minutes is " + fmt(c.correct) + ".";
+    } else {
+      var hint = "";
+      if (hourOf(chosen) !== hourOf(c.correct) && (chosen % 60) === (c.correct % 60)){
+        hint = " You had the minutes right — but counting back past the top of the hour drops the hour by one.";
+      } else if (chosen === norm(c.arrive + c.ride)){
+        hint = " That one counts forward. You want to leave <em>before</em> you arrive, so count backwards.";
+      } else {
+        hint = " You were " + Math.abs(Math.round((chosen - c.correct)/5)) + " hop off. Watch the ladder below.";
+      }
+      v.innerHTML = "<b>Not quite — it's " + fmt(c.correct) + ".</b>" + hint;
+    }
+    v.classList.remove("hide");
+    walkQuestionLadder();
+    $("q-next-row").classList.remove("hide");
+  });
+
+  $("q-next").addEventListener("click", newQuestion);
+
+  /* ================= boot ================= */
+  drawBack();
+  drawFwd();
+  drawPlan();
+  drawScores();
+})();
+</script>
+
+<script>
+/* Keep working with no signal: cache the page after the first visit. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){ /* offline support is optional */ });
+  });
+}
+</script>
+</body>
+</html>
