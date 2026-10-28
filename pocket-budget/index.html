@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pocket Budget">
+<meta name="theme-color" content="#EFF2F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101817" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<title>Pocket Budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ============ TOKENS: light is the base ============ */
+:root{
+  --ground:#EFF2F1;
+  --surface:#FFFFFF;
+  --surface-2:#F5F8F7;
+  --ink:#141F1D;
+  --muted:#5B6A67;
+  --hair:#D3DBD9;
+  --route:#0E6E64;
+  --route-ink:#0E6E64;
+  --route-on:#FFFFFF;
+  --route-soft:#E2EFEC;
+  --signal:#B87615;
+  --signal-fill:#DE9A2E;
+  --signal-soft:#FBF0DC;
+  --ok:#2F6B4C;
+  --ok-soft:#E4F0E9;
+  --warn:#B0562F;
+  --warn-soft:#FBEBE3;
+  --shadow:0 1px 2px rgba(20,31,29,.06), 0 6px 20px rgba(20,31,29,.06);
+  --focus:#0E6E64;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101817;
+    --surface:#182221;
+    --surface-2:#1E2A28;
+    --ink:#E7EDEB;
+    --muted:#95A5A2;
+    --hair:#2C3A38;
+    --route:#2FA697;
+    --route-ink:#43BFAF;
+    --route-on:#08201E;
+    --route-soft:#17312D;
+    --signal:#EDB65E;
+    --signal-fill:#E0A340;
+    --signal-soft:#33291A;
+    --ok:#6FC095;
+    --ok-soft:#1B2E24;
+    --warn:#E29065;
+    --warn-soft:#33221A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    --focus:#43BFAF;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101817;
+  --surface:#182221;
+  --surface-2:#1E2A28;
+  --ink:#E7EDEB;
+  --muted:#95A5A2;
+  --hair:#2C3A38;
+  --route:#2FA697;
+  --route-ink:#43BFAF;
+  --route-on:#08201E;
+  --route-soft:#17312D;
+  --signal:#EDB65E;
+  --signal-fill:#E0A340;
+  --signal-soft:#33291A;
+  --ok:#6FC095;
+  --ok-soft:#1B2E24;
+  --warn:#E29065;
+  --warn-soft:#33221A;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+  --focus:#43BFAF;
+}
+
+*{box-sizing:border-box;}
+.hide{ display:none !important; }
+
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.mono{ font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
+
+.wrap{
+  max-width:600px;
+  margin:0 auto;
+  padding:22px 16px 96px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* ============ header ============ */
+.masthead{ display:flex; flex-direction:column; gap:3px; }
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--route-ink);
+}
+h1{
+  font-family:"Archivo",Helvetica,Arial,sans-serif;
+  font-weight:800; font-size:clamp(30px,8vw,40px); line-height:1.02; letter-spacing:-.02em;
+  margin:0; text-wrap:balance;
+}
+.dek{ color:var(--muted); font-size:14.5px; margin:2px 0 0; max-width:46ch; }
+
+/* ============ tabs ============ */
+.tabs{
+  display:flex; gap:4px;
+  background:var(--surface-2); border:1px solid var(--hair); border-radius:11px;
+  padding:4px; margin-top:4px;
+  position:sticky; top:0; z-index:5;
+  box-shadow:0 4px 10px -6px rgba(0,0,0,.18);
+}
+.tab{
+  flex:1; appearance:none; border:0; background:transparent; color:var(--muted);
+  font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:14px; letter-spacing:.01em;
+  padding:10px 4px; border-radius:8px; cursor:pointer; min-height:42px;
+  transition:background .16s ease,color .16s ease;
+}
+.tab[aria-selected="true"]{ background:var(--ink); color:var(--ground); }
+
+.seg{ display:flex; gap:3px; background:var(--surface-2); border:1px solid var(--hair); border-radius:9px; padding:3px; flex:0 0 auto; }
+.seg button{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:13px;
+  color:var(--muted); padding:8px 12px; border-radius:7px; min-height:38px;
+  transition:background .16s ease, color .16s ease;
+}
+.seg button[aria-pressed="true"]{ background:var(--route); color:var(--route-on); }
+.seg.wide{ display:flex; }
+.seg.wide button{ flex:1; }
+
+/* ============ cards ============ */
+.view{ display:flex; flex-direction:column; gap:14px; }
+.card{
+  background:var(--surface); border:1px solid var(--hair); border-radius:14px;
+  padding:16px 16px 18px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; gap:12px;
+}
+h2{
+  font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:18px;
+  letter-spacing:-.01em; margin:0; line-height:1.25; text-wrap:balance;
+}
+.sub{ color:var(--muted); font-size:13.5px; margin:3px 0 0; }
+.flabel{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted);
+  display:flex; align-items:center; gap:8px;
+}
+.flabel .num{
+  width:20px; height:20px; border-radius:50%; background:var(--route); color:var(--route-on);
+  display:inline-flex; align-items:center; justify-content:center; font-size:11px; letter-spacing:0;
+}
+.flabel .opt{ text-transform:none; letter-spacing:0; font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:12px; }
+.field{ display:flex; flex-direction:column; gap:8px; }
+
+input[type="text"],input[type="date"]{
+  font-family:"IBM Plex Sans",sans-serif; font-size:16px; color:var(--ink);
+  background:var(--surface-2); border:1.5px solid var(--hair); border-radius:9px;
+  padding:11px 12px; width:100%; min-height:48px;
+}
+input[type="date"]{ font-family:"IBM Plex Mono",monospace; font-weight:600; }
+input:focus-visible,button:focus-visible,label.btn:focus-within{ outline:2.5px solid var(--focus); outline-offset:2px; }
+
+/* ============ category tiles ============ */
+.cats{ display:grid; grid-template-columns:repeat(5,1fr); gap:7px; }
+.cat{
+  appearance:none; cursor:pointer;
+  background:var(--surface-2); border:1.5px solid var(--hair); border-radius:12px;
+  color:var(--ink);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  padding:9px 2px 7px; min-height:74px;
+  font-family:"IBM Plex Sans",sans-serif; font-size:11.5px; font-weight:500; line-height:1.15;
+  transition:background .14s ease,border-color .14s ease,transform .1s ease;
+}
+.cat svg{ width:28px; height:28px; color:var(--route-ink); }
+.cat:active{ transform:scale(.95); }
+.cat[aria-pressed="true"]{ background:var(--signal-soft); border-color:var(--signal-fill); font-weight:600; }
+.cat[aria-pressed="true"] svg{ color:var(--signal); }
+.cat.stamp{ animation:stamp .42s ease; }
+@keyframes stamp{ 0%{transform:scale(1);} 35%{transform:scale(1.12) rotate(-3deg);} 100%{transform:scale(1);} }
+@media (max-width:350px){ .cats{ grid-template-columns:repeat(4,1fr); } }
+.catname{ font-family:"Archivo",sans-serif; font-weight:700; font-size:15px; color:var(--signal); min-height:22px; }
+.catname.none{ color:var(--muted); font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:13.5px; }
+
+/* ============ amount + keypad ============ */
+.amount{
+  display:flex; align-items:baseline; justify-content:center; gap:2px;
+  background:var(--surface-2); border:1.5px solid var(--hair); border-radius:12px;
+  padding:12px; min-height:68px;
+  font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:36px; line-height:1.1;
+  font-variant-numeric:tabular-nums;
+}
+.amount .cur{ color:var(--muted); font-size:26px; margin-right:2px; }
+.amount .ghost{ color:var(--hair); }
+.amount.has{ border-color:var(--signal-fill); background:var(--signal-soft); }
+.amount.shake{ animation:shake .3s ease; }
+@keyframes shake{ 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+.keys{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.key{
+  appearance:none; cursor:pointer; border:1.5px solid var(--hair); background:var(--surface);
+  color:var(--ink); border-radius:10px; min-height:52px;
+  font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:22px;
+  transition:background .1s ease;
+}
+.key:active{ background:var(--hair); }
+.key.fn{ background:var(--surface-2); color:var(--muted); }
+.key svg{ width:24px; height:24px; vertical-align:middle; }
+
+/* chips */
+.chips{ display:flex; flex-wrap:wrap; gap:7px; }
+.chips.scroll{ flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.chips.scroll::-webkit-scrollbar{ display:none; }
+.chip{
+  appearance:none; cursor:pointer; flex:0 0 auto;
+  border:1.5px solid var(--hair); background:var(--surface-2); color:var(--ink);
+  border-radius:999px; padding:7px 13px; min-height:38px;
+  font-family:"IBM Plex Sans",sans-serif; font-size:14px; font-weight:500;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.chip svg{ width:18px; height:18px; color:var(--route-ink); }
+.chip[aria-pressed="true"]{ background:var(--route); border-color:var(--route); color:var(--route-on); }
+.chip[aria-pressed="true"] svg{ color:var(--route-on); }
+.hint{ font-size:12.5px; color:var(--muted); margin:0; }
+
+/* ============ buttons ============ */
+.btn{
+  appearance:none; cursor:pointer;
+  font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:15px;
+  border-radius:10px; padding:12px 16px; min-height:50px;
+  border:1.5px solid var(--route); background:var(--route); color:var(--route-on);
+  transition:transform .1s ease, filter .16s ease;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; text-align:center;
+}
+.btn:hover{ filter:brightness(1.08); }
+.btn:active{ transform:translateY(1px); }
+.btn.ghost{ background:transparent; color:var(--route-ink); }
+.btn.ghost:hover{ background:var(--surface-2); filter:none; }
+.btn.danger{ background:transparent; border-color:var(--warn); color:var(--warn); }
+.btn.danger:hover{ background:var(--warn-soft); filter:none; }
+.btn.big{ font-size:17px; min-height:56px; }
+.btn[disabled]{ opacity:.42; cursor:not-allowed; transform:none; filter:none; }
+.btn-row{ display:flex; gap:9px; flex-wrap:wrap; }
+.btn-row .btn{ flex:1 1 auto; }
+.lnk{
+  appearance:none; border:0; background:none; cursor:pointer; padding:6px 0;
+  color:var(--route-ink); font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:14px;
+  text-decoration:underline; text-underline-offset:3px; text-align:left;
+}
+
+.msg{ font-size:13.5px; border-radius:9px; padding:9px 12px; line-height:1.45; margin:0; }
+.msg.good{ background:var(--ok-soft); color:var(--ok); }
+.msg.oops{ background:var(--warn-soft); color:var(--warn); }
+.note{ font-size:13px; color:var(--muted); border-left:3px solid var(--hair); padding-left:11px; line-height:1.5; margin:0; }
+.note.spot{ border-left-color:var(--signal-fill); color:var(--ink); background:var(--signal-soft); padding:9px 11px; border-radius:0 8px 8px 0; }
+.editbar{
+  display:flex; align-items:center; gap:10px;
+  background:var(--signal-soft); border:1px solid var(--signal-fill); border-radius:10px;
+  padding:9px 12px; font-size:14px;
+}
+.editbar b{ font-family:"Archivo",sans-serif; }
+
+/* ============ month total after saving ============ */
+.result{
+  display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;
+  background:var(--signal-soft); border-radius:10px; padding:10px 14px;
+}
+.result .lb{ font-size:14px; }
+.result .vl{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:22px; color:var(--signal); }
+.alsoline{ font-size:13.5px; color:var(--muted); margin:0; }
+.alsoline b{ color:var(--ink); font-family:"IBM Plex Mono",monospace; font-weight:600; }
+
+/* ============ month view ============ */
+.monthnav{ display:flex; align-items:center; gap:8px; }
+.monthnav .mbtn{
+  appearance:none; cursor:pointer; flex:0 0 auto;
+  width:48px; height:48px; border-radius:10px; border:1.5px solid var(--hair);
+  background:var(--surface); color:var(--ink); font-size:22px; font-weight:700;
+}
+.monthnav .mbtn[disabled]{ opacity:.35; cursor:default; }
+.monthnav .mlabel{
+  flex:1; text-align:center; font-family:"Archivo",sans-serif; font-weight:800; font-size:20px;
+}
+.total{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+.total .lb{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+.total .vl{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:40px; line-height:1.1; color:var(--signal); font-variant-numeric:tabular-nums; }
+.total .mt{ font-size:13.5px; color:var(--muted); }
+
+.brow{ border-bottom:1px solid var(--hair); }
+.brow:last-child{ border-bottom:0; }
+.bhead{
+  appearance:none; border:0; background:none; cursor:pointer; width:100%; text-align:left; color:var(--ink);
+  display:grid; grid-template-columns:40px 1fr auto 18px; align-items:center; column-gap:11px; row-gap:6px;
+  padding:11px 0; font:inherit;
+}
+.ibox{
+  width:40px; height:40px; border-radius:10px; background:var(--route-soft); color:var(--route-ink);
+  display:flex; align-items:center; justify-content:center; grid-row:span 2;
+}
+.ibox svg{ width:24px; height:24px; }
+.bname{ font-weight:600; font-size:15px; line-height:1.25; }
+.bamt{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:15.5px; font-variant-numeric:tabular-nums; }
+.chev{ color:var(--muted); transition:transform .18s ease; grid-row:span 2; }
+.brow.open .chev{ transform:rotate(90deg); }
+.bar{ grid-column:2 / 4; height:8px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
+.bar i{ display:block; height:100%; background:var(--route); border-radius:4px; transition:width .35s ease; }
+.bar.hot i{ background:var(--signal-fill); }
+.bdetail{ padding:0 0 12px 51px; display:flex; flex-direction:column; gap:2px; }
+.dline{ display:flex; justify-content:space-between; gap:12px; font-size:14px; padding:5px 0; border-top:1px dashed var(--hair); }
+.dline:first-child{ border-top:0; }
+.dline .k{ min-width:0; overflow-wrap:anywhere; }
+.dline .k small{ color:var(--muted); font-size:12.5px; margin-left:4px; }
+.dline .k.un{ color:var(--muted); font-style:italic; }
+.dline .v{ font-family:"IBM Plex Mono",monospace; font-weight:600; white-space:nowrap; }
+
+.mrow{ display:grid; grid-template-columns:76px 1fr auto; align-items:center; gap:10px; padding:8px 0; }
+.mrow .ml{ font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-weight:600; color:var(--muted); }
+.mrow.sel .ml{ color:var(--signal); }
+.mrow .bar{ grid-column:auto; height:12px; }
+.mrow .v{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:14.5px; text-align:right; min-width:84px; }
+
+/* ============ list view ============ */
+.day{ display:flex; flex-direction:column; }
+.dayhead{
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); padding:12px 0 6px; border-bottom:1px solid var(--hair);
+}
+.erow{
+  appearance:none; border:0; background:none; cursor:pointer; width:100%; text-align:left; color:var(--ink); font:inherit;
+  display:grid; grid-template-columns:40px 1fr auto; align-items:center; gap:11px;
+  padding:10px 0; border-bottom:1px solid var(--hair);
+}
+.erow .ibox{ grid-row:auto; }
+.erow .tx{ min-width:0; display:flex; flex-direction:column; gap:1px; }
+.erow .ti{ font-weight:600; font-size:15px; line-height:1.3; overflow-wrap:anywhere; }
+.erow .mt{ font-size:12.5px; color:var(--muted); }
+.erow .v{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:15.5px; }
+.pill{
+  display:inline-block; font-size:11.5px; font-weight:600; border-radius:999px; padding:1px 8px;
+  background:var(--signal-soft); color:var(--signal); margin-left:4px;
+}
+.erow.flash{ animation:flash 1.2s ease; }
+@keyframes flash{ 0%,40%{ background:var(--signal-soft);} 100%{ background:transparent; } }
+.empty{ color:var(--muted); font-size:14.5px; text-align:center; padding:18px 10px; line-height:1.5; margin:0; }
+
+/* file button */
+.filebtn input{ position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
+
+/* ============ toast ============ */
+.toast{
+  position:fixed; left:50%; bottom:calc(14px + env(safe-area-inset-bottom));
+  transform:translate(-50%, 140%);
+  width:min(568px, calc(100% - 24px));
+  background:var(--ink); color:var(--ground);
+  border-radius:12px; padding:8px 8px 8px 14px;
+  display:flex; align-items:center; gap:8px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+  transition:transform .26s ease, visibility 0s linear .26s; z-index:20; visibility:hidden;
+  font-size:14.5px;
+}
+.toast.show{ transform:translate(-50%, 0); visibility:visible; transition:transform .26s ease; }
+.toast .tt{ flex:1; min-width:0; }
+.toast .tt b{ font-family:"IBM Plex Mono",monospace; }
+.toast button{
+  appearance:none; border:0; cursor:pointer; border-radius:8px; min-height:42px; padding:6px 12px;
+  font-family:"Archivo",sans-serif; font-weight:700; font-size:14px;
+  background:transparent; color:var(--ground); border:1.5px solid rgba(255,255,255,.35);
+}
+:root[data-theme="dark"] .toast button{ border-color:rgba(0,0,0,.3); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .toast button{ border-color:rgba(0,0,0,.3); } }
+
+.foot{ color:var(--muted); font-size:12.5px; text-align:center; padding-top:6px; }
+
+/* ============ How it works ============ */
+.helplink{
+  align-self:flex-start; margin-top:4px;
+  appearance:none; cursor:pointer; border:1.5px solid var(--hair); background:var(--surface);
+  color:var(--route-ink); border-radius:999px; padding:6px 14px 6px 10px; min-height:38px;
+  font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:14px;
+  display:inline-flex; align-items:center; gap:7px;
+}
+.helplink svg{ width:18px; height:18px; }
+dialog.guide{
+  border:0; padding:0; margin:auto; width:min(520px, calc(100% - 24px)); max-height:calc(100% - 24px);
+  background:var(--surface); color:var(--ink); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+dialog.guide::backdrop{ background:rgba(10,18,17,.55); }
+.gbody{ padding:18px 18px 16px; display:flex; flex-direction:column; gap:14px; }
+.gtop{ display:flex; justify-content:space-between; align-items:center; }
+.gcount{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.gpic{
+  background:var(--surface-2); border:1px solid var(--hair); border-radius:12px;
+  height:150px; display:flex; align-items:center; justify-content:center; color:var(--route-ink);
+}
+.gpic svg{ width:200px; height:130px; }
+.gbody h2{ font-size:22px; }
+.gtext{ font-size:15.5px; line-height:1.55; margin:0; }
+.gtext b{ font-weight:600; }
+.gdots{ display:flex; gap:6px; justify-content:center; }
+.gdots i{ width:8px; height:8px; border-radius:50%; background:var(--hair); }
+.gdots i.on{ background:var(--signal-fill); width:20px; border-radius:4px; }
+@media (prefers-reduced-motion: no-preference){ .gdots i{ transition:width .2s ease, background .2s ease; } }
+
+@media (prefers-reduced-motion: reduce){
+  .cat.stamp,.amount.shake,.erow.flash{ animation:none; }
+  .toast,.bar i,.chev{ transition:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Write it down &middot; see where it goes</span>
+    <h1>Pocket Budget</h1>
+    <p class="dek">Tap what kind of thing you bought, type what it cost. Your month adds itself up as you go.</p>
+    <button type="button" class="helplink" id="help-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17.2h.01"/></svg>How it works</button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-add" aria-selected="true" aria-controls="view-add">Add</button>
+    <button class="tab" role="tab" id="tab-month" aria-selected="false" aria-controls="view-month">Month</button>
+    <button class="tab" role="tab" id="tab-list" aria-selected="false" aria-controls="view-list">List</button>
+    <button class="tab" role="tab" id="tab-share" aria-selected="false" aria-controls="view-share">Share</button>
+  </nav>
+
+  <!-- ================= ADD ================= -->
+  <div id="view-add" class="view" role="tabpanel" aria-labelledby="tab-add">
+
+    <div class="editbar hide" id="editbar">
+      <span style="flex:1">Changing <b id="edit-what">an entry</b></span>
+      <button type="button" class="lnk" id="edit-cancel">Cancel</button>
+    </div>
+
+    <section class="card">
+      <div class="field">
+        <span class="flabel" id="lab-cat"><span class="num">1</span>What kind of thing?</span>
+        <div class="cats" id="cats" role="group" aria-labelledby="lab-cat"></div>
+        <div class="catname none" id="catname">Tap one of the pictures.</div>
+      </div>
+
+      <div class="field">
+        <span class="flabel" id="lab-amt"><span class="num">2</span>How much?</span>
+        <div class="amount" id="amount" aria-live="polite" aria-labelledby="lab-amt"></div>
+        <div class="keys" id="keys"></div>
+      </div>
+
+      <div class="field">
+        <label class="flabel" for="note"><span class="num">3</span>What or where? <span class="opt">optional</span></label>
+        <input type="text" id="note" maxlength="60" placeholder="Starbucks, iPhone, Target&hellip;" autocomplete="off" autocapitalize="words">
+        <div class="chips" id="suggest"></div>
+      </div>
+
+      <div class="field">
+        <span class="flabel" id="lab-date"><span class="num">4</span>When?</span>
+        <div class="chips" id="datechips" role="group" aria-labelledby="lab-date">
+          <button type="button" class="chip" data-d="0" aria-pressed="true">Today</button>
+          <button type="button" class="chip" data-d="1" aria-pressed="false">Yesterday</button>
+          <button type="button" class="chip" data-d="pick" aria-pressed="false">Another day</button>
+        </div>
+        <input type="date" id="datepick" class="hide" aria-label="Pick the day">
+      </div>
+
+      <p class="msg oops hide" id="add-err" role="alert"></p>
+
+      <button type="button" class="btn big" id="save" disabled>Save it</button>
+
+      <div class="btn-row hide" id="editbtns">
+        <button type="button" class="btn ghost" id="again">Add again for today</button>
+        <button type="button" class="btn danger" id="del">Delete</button>
+      </div>
+    </section>
+
+    <section class="card hide" id="working" aria-live="polite">
+      <div class="result">
+        <span class="lb" id="w-rlb">Spent this month</span>
+        <span class="vl" id="w-rvl"></span>
+      </div>
+      <p class="alsoline" id="w-also"></p>
+    </section>
+  </div>
+
+  <!-- ================= MONTH ================= -->
+  <div id="view-month" class="view hide" role="tabpanel" aria-labelledby="tab-month">
+    <div class="monthnav">
+      <button type="button" class="mbtn" id="m-prev" aria-label="Earlier month">&lsaquo;</button>
+      <span class="mlabel" id="m-label"></span>
+      <button type="button" class="mbtn" id="m-next" aria-label="Later month">&rsaquo;</button>
+    </div>
+
+    <div class="seg wide" role="group" aria-label="How to look at it">
+      <button type="button" id="mv-type" aria-pressed="true">By type</button>
+      <button type="button" id="mv-months" aria-pressed="false">Month by month</button>
+    </div>
+
+    <div id="mv-type-pane" class="view">
+      <section class="card">
+        <div class="total">
+          <span class="lb" id="m-tlb">Spent in October</span>
+          <span class="vl" id="m-total">$0.00</span>
+          <span class="mt" id="m-count"></span>
+        </div>
+      </section>
+      <section class="card" id="m-cats-card">
+        <div>
+          <h2>Where it went</h2>
+          <p class="sub">Tap a line to see what&rsquo;s in it.</p>
+        </div>
+        <div id="m-cats"></div>
+      </section>
+    </div>
+
+    <div id="mv-months-pane" class="view hide">
+      <section class="card">
+        <div class="field">
+          <span class="flabel">Show</span>
+          <div class="chips scroll" id="mm-chips"></div>
+        </div>
+        <div id="mm-rows"></div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ================= LIST ================= -->
+  <div id="view-list" class="view hide" role="tabpanel" aria-labelledby="tab-list">
+    <div class="monthnav">
+      <button type="button" class="mbtn" id="l-prev" aria-label="Earlier month">&lsaquo;</button>
+      <span class="mlabel" id="l-label"></span>
+      <button type="button" class="mbtn" id="l-next" aria-label="Later month">&rsaquo;</button>
+    </div>
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+          <h2>Everything you entered</h2>
+          <p class="sub">Tap one to change it, fill in details, or delete it.</p>
+        </div>
+      </div>
+      <div class="chips">
+        <button type="button" class="chip" id="l-filter" aria-pressed="false">Missing details only</button>
+      </div>
+      <div id="l-rows"></div>
+    </section>
+  </div>
+
+  <!-- ================= SHARE ================= -->
+  <div id="view-share" class="view hide" role="tabpanel" aria-labelledby="tab-share">
+    <section class="card">
+      <div>
+        <h2>Send a copy</h2>
+        <p class="sub">Makes one small file with everything you&rsquo;ve entered. Send it by text or email, or save it to Files. It doubles as your backup.</p>
+      </div>
+      <button type="button" class="btn big" id="s-share">Share a copy</button>
+      <p class="note" id="s-last"></p>
+    </section>
+
+    <section class="card">
+      <div>
+        <h2>Open a copy</h2>
+        <p class="sub">Choose a copy file someone sent you. New and changed entries are added; nothing is entered twice.</p>
+      </div>
+      <label class="btn ghost filebtn">Choose a copy file&hellip;
+        <input type="file" id="s-file" accept=".json,application/json">
+      </label>
+      <p class="msg hide" id="s-msg" role="status"></p>
+    </section>
+
+    <section class="card">
+      <div>
+        <h2>Spreadsheet</h2>
+        <p class="sub">Every entry as a CSV file that opens in Excel, Numbers or Google Sheets.</p>
+      </div>
+      <button type="button" class="btn ghost" id="s-csv">Download spreadsheet</button>
+    </section>
+
+    <p class="note spot"><b>Where your entries live.</b> Everything stays on this phone, in this app. Nobody else can see it unless you send a copy. If you ever clear Safari&rsquo;s website data or get a new phone, open your latest copy to get it all back.</p>
+  </div>
+
+  <p class="foot">Made at home. Write it down while it&rsquo;s fresh.</p>
+</div>
+
+<dialog class="guide" id="guide" aria-labelledby="g-title">
+  <div class="gbody">
+    <div class="gtop">
+      <span class="gcount" id="g-count">1 of 7</span>
+      <button type="button" class="lnk" id="g-close">Close</button>
+    </div>
+    <div class="gpic" id="g-pic" aria-hidden="true"></div>
+    <h2 id="g-title"></h2>
+    <p class="gtext" id="g-text"></p>
+    <div class="gdots" id="g-dots" aria-hidden="true"></div>
+    <div class="btn-row">
+      <button type="button" class="btn ghost" id="g-back">Back</button>
+      <button type="button" class="btn" id="g-next" autofocus>Next</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="tt" id="toast-text"></span>
+  <button type="button" id="toast-undo">Undo</button>
+  <button type="button" id="toast-edit">Edit</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= categories + icons ================= */
+  var ICON = {
+    groceries:'<path d="M4.5 9h15l-1.3 10a1.6 1.6 0 0 1-1.6 1.4H7.4a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M8.5 9 11 3.8M15.5 9 13 3.8"/><path d="M9 13v4M12 13v4M15 13v4"/>',
+    eating:'<path d="M4 9.5h12v4.5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.6a2.4 2.4 0 0 1 0 4.8H16"/><path d="M7.5 3.5c-.8 1 .8 1.8 0 3M11.5 3.5c-.8 1 .8 1.8 0 3"/>',
+    transport:'<path d="M4 16.5v-4.3L6 7.4A2 2 0 0 1 7.9 6h8.2a2 2 0 0 1 1.9 1.4l2 4.8v4.3z"/><path d="M4 12.2h16"/><circle cx="7.6" cy="16.6" r="1.9"/><circle cx="16.4" cy="16.6" r="1.9"/>',
+    classes:'<path d="M12 6.6C10 5 7 4.6 3.8 5.1v13.2c3.2-.5 6.2 0 8.2 1.4 2-1.4 5-1.9 8.2-1.4V5.1C17 4.6 14 5 12 6.6z"/><path d="M12 6.6v13.1"/><path d="M6.6 9.2c1.2-.1 2.4 0 3.4.4M6.6 12.4c1.2-.1 2.4 0 3.4.4"/>',
+    phone:'<rect x="6.8" y="2.8" width="10.4" height="18.4" rx="2.4"/><path d="M10.6 18.2h2.8"/>',
+    clothes:'<path d="M8.2 4 3.6 7l2 3.6 2.4-1V20h8V9.6l2.4 1 2-3.6L15.8 4c-.7 1.5-2.1 2.4-3.8 2.4S8.9 5.5 8.2 4z"/>',
+    fun:'<path d="M3.5 7.5h17v3a1.6 1.6 0 0 0 0 3.2v3h-17v-3a1.6 1.6 0 0 0 0-3.2z"/><path d="M14.5 7.8v1.6M14.5 11.2v1.6M14.5 14.6v1.6"/>',
+    gifts:'<rect x="4" y="9.5" width="16" height="3.4" rx=".6"/><path d="M5.4 12.9h13.2V20H5.4z"/><path d="M12 9.5V20"/><path d="M12 9.5c-1.3-2.8-4.9-3.7-5-1.6C7 9.6 10.6 9.5 12 9.5c1.4 0 5 .1 5-1.6-.1-2.1-3.7-1.2-5 1.6z"/>',
+    health:'<rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M12 8.3v7.4M8.3 12h7.4"/>',
+    other:'<circle cx="12" cy="12" r="8.5"/><circle cx="8.2" cy="12" r=".6" fill="currentColor"/><circle cx="12" cy="12" r=".6" fill="currentColor"/><circle cx="15.8" cy="12" r=".6" fill="currentColor"/>'
+  };
+  var CATS = [
+    { id:"groceries", name:"Groceries",             short:"Groceries" },
+    { id:"eating",    name:"Eating out",            short:"Eating out" },
+    { id:"transport", name:"Transport",             short:"Transport" },
+    { id:"classes",   name:"Classes",               short:"Classes" },
+    { id:"phone",     name:"Phone & subscriptions", short:"Phone & subs" },
+    { id:"clothes",   name:"Clothes",               short:"Clothes" },
+    { id:"fun",       name:"Fun",                   short:"Fun" },
+    { id:"gifts",     name:"Gifts",                 short:"Gifts" },
+    { id:"health",    name:"Health & personal care",short:"Health & care" },
+    { id:"other",     name:"Other",                 short:"Other" }
+  ];
+  var CAT = {}; CATS.forEach(function(c){ CAT[c.id] = c; });
+  function svg(id){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON[id] || ICON.other) + '</svg>';
+  }
+  var BACK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11v14H9l-6-7z"/><path d="m12.5 9.5 5 5M17.5 9.5l-5 5"/></svg>';
+  var CHEV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+
+  /* ================= small helpers ================= */
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]; }); }
+  function store(k, v){
+    try { if (v === undefined) return window.localStorage.getItem(k); window.localStorage.setItem(k, v); }
+    catch(e){ return null; }
+  }
+  function load(k, fallback){ try { var v = JSON.parse(store(k)); return v == null ? fallback : v; } catch(e){ return fallback; } }
+  function save(k, v){ store(k, JSON.stringify(v)); }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function ymd(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function fromYmd(s){ var p = s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+  function today(){ return ymd(new Date()); }
+  function daysAgo(n){ var d = new Date(); d.setDate(d.getDate()-n); return ymd(d); }
+  function ymOf(s){ return s.slice(0,7); }
+  function ymShift(ym, n){
+    var y = +ym.slice(0,4), m = +ym.slice(5,7) - 1 + n;
+    y += Math.floor(m/12); m = ((m % 12) + 12) % 12;
+    return y + "-" + pad(m+1);
+  }
+  function ymLong(ym){ return MONTHS[+ym.slice(5,7)-1] + " " + ym.slice(0,4); }
+  function ymShort(ym){ return MON[+ym.slice(5,7)-1] + " " + ym.slice(0,4); }
+  function niceDate(s){ var d = fromYmd(s); return DOW[d.getDay()] + " " + d.getDate() + " " + MON[d.getMonth()]; }
+
+  /* money is kept in whole cents so sums are exact */
+  function money(c){
+    var neg = c < 0; c = Math.abs(c);
+    var d = Math.floor(c/100), r = c % 100;
+    return (neg ? "-" : "") + "$" + String(d).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "." + pad(r);
+  }
+  function noteKey(s){ return String(s || "").trim().replace(/\s+/g, " ").toLowerCase(); }
+  /* "iphone", "iPhone " and "IPhone" count as the same detail. Show the spelling used most,
+     and on a tie the one with capitals (people usually type the proper name carefully once). */
+  function caps(s){ return (s.match(/[A-Z]/g) || []).length; }
+  function bestLabels(){
+    var seen = {};
+    live().forEach(function(e){
+      if (!e.note) return;
+      var k = noteKey(e.note), v = e.note.trim().replace(/\s+/g, " ");
+      seen[k] = seen[k] || {}; seen[k][v] = (seen[k][v] || 0) + 1;
+    });
+    var out = {};
+    Object.keys(seen).forEach(function(k){
+      out[k] = Object.keys(seen[k]).sort(function(a,b){ return seen[k][b] - seen[k][a] || caps(b) - caps(a); })[0];
+    });
+    return out;
+  }
+
+  /* ================= state ================= */
+  /* entries: [{id, cat, cents, note, date:"YYYY-MM-DD", created, updated, deleted?}] */
+  var entries = load("pb_entries", []);
+  if (!Array.isArray(entries)) entries = [];
+  function persist(){ save("pb_entries", entries); }
+  function live(){ return entries.filter(function(e){ return !e.deleted; }); }
+  function byId(id){ for (var i=0;i<entries.length;i++) if (entries[i].id === id) return entries[i]; return null; }
+  function monthTotal(ym, exceptId){
+    var t = 0;
+    live().forEach(function(e){ if (ymOf(e.date) === ym && e.id !== exceptId) t += e.cents; });
+    return t;
+  }
+
+  /* ================= tabs ================= */
+  var VIEWS = ["add","month","list","share"];
+  function show(v){
+    VIEWS.forEach(function(n){
+      $("tab-"+n).setAttribute("aria-selected", n === v ? "true" : "false");
+      $("view-"+n).classList.toggle("hide", n !== v);
+    });
+    if (v === "month") drawMonth();
+    if (v === "list") drawList();
+    if (v === "share") drawShare();
+    if (v !== "add") $("working").classList.add("hide");
+  }
+  VIEWS.forEach(function(n){ $("tab-"+n).addEventListener("click", function(){ show(n); }); });
+
+
+  /* ================= ADD form ================= */
+  var form = { cat:null, buf:"", note:"", dateMode:"0", date:today(), editId:null };
+
+  $("cats").innerHTML = CATS.map(function(c){
+    return '<button type="button" class="cat" data-cat="' + c.id + '" aria-pressed="false" aria-label="' + esc(c.name) + '">' + svg(c.id) + '<span>' + esc(c.short) + '</span></button>';
+  }).join("");
+  $("cats").addEventListener("click", function(ev){
+    var b = ev.target.closest(".cat"); if (!b) return;
+    form.cat = b.getAttribute("data-cat");
+    drawForm();
+  });
+
+  var KEYS = ["1","2","3","4","5","6","7","8","9",".","0","back"];
+  $("keys").innerHTML = KEYS.map(function(k){
+    if (k === "back") return '<button type="button" class="key fn" data-k="back" aria-label="Delete last digit">' + BACK_SVG + '</button>';
+    return '<button type="button" class="key' + (k === "." ? " fn" : "") + '" data-k="' + k + '">' + k + '</button>';
+  }).join("");
+
+  /* Keypad rules: at most two digits after the point, at most $99,999. Anything else
+     is refused with a small shake, so a typo can't turn $6.25 into $625. */
+  function press(k){
+    var b = form.buf, dot = b.indexOf(".");
+    if (k === "back"){ form.buf = b.slice(0, -1); return true; }
+    if (k === "."){
+      if (dot >= 0) return false;
+      form.buf = (b === "" ? "0" : b) + "."; return true;
+    }
+    if (dot >= 0){ if (b.length - dot - 1 >= 2) return false; form.buf = b + k; return true; }
+    if (b === "0"){ form.buf = k; return true; }
+    if (b.length >= 5) return false;
+    if (b === "" && k === "0"){ form.buf = "0"; return true; }
+    form.buf = b + k; return true;
+  }
+  function bufCents(b){
+    if (!b) return 0;
+    var p = b.split("."), d = parseInt(p[0] || "0", 10), c = (p[1] || "");
+    c = (c + "00").slice(0, 2);
+    return d*100 + parseInt(c, 10);
+  }
+  function centsBuf(c){
+    var d = Math.floor(c/100), r = c % 100;
+    return r === 0 ? String(d) : d + "." + pad(r);
+  }
+  $("keys").addEventListener("click", function(ev){
+    var b = ev.target.closest(".key"); if (!b) return;
+    if (!press(b.getAttribute("data-k"))){
+      var a = $("amount"); a.classList.remove("shake"); void a.offsetWidth; a.classList.add("shake");
+    }
+    $("add-err").classList.add("hide");
+    drawForm();
+  });
+  /* a hardware keyboard works too (handy on a laptop) */
+  document.addEventListener("keydown", function(ev){
+    if ($("view-add").classList.contains("hide")) return;
+    var t = ev.target; if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+    var k = ev.key;
+    if (/^[0-9.]$/.test(k) || k === "Backspace"){
+      ev.preventDefault();
+      if (!press(k === "Backspace" ? "back" : k)){ var a = $("amount"); a.classList.remove("shake"); void a.offsetWidth; a.classList.add("shake"); }
+      drawForm();
+    }
+  });
+
+  function drawAmount(){
+    var b = form.buf, ghost;
+    if (b === "") ghost = "0.00";
+    else if (b.indexOf(".") < 0) ghost = ".00";
+    else ghost = "00".slice(b.length - b.indexOf(".") - 1);
+    var intPart = b.split(".")[0];
+    var shown = intPart ? intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + b.slice(intPart.length) : b;
+    $("amount").innerHTML = '<span class="cur">$</span><span>' + esc(shown) + '</span><span class="ghost">' + ghost + '</span>';
+    $("amount").classList.toggle("has", bufCents(b) > 0);
+  }
+
+  /* suggestions: the details she has used before in this category, most used first */
+  function suggestions(cat){
+    var tally = {}, best = bestLabels();
+    live().forEach(function(e){
+      if (e.cat !== cat || !e.note) return;
+      var k = noteKey(e.note);
+      if (!tally[k]) tally[k] = { n:0, label:e.note.trim(), last:"", key:k };
+      tally[k].n++;
+      if (e.date >= tally[k].last){ tally[k].last = e.date; tally[k].label = e.note.trim(); }
+    });
+    return Object.keys(tally).map(function(k){ return tally[k]; })
+      .sort(function(a,b){ return b.n - a.n || (a.last < b.last ? 1 : -1); })
+      .slice(0, 6).map(function(t){ return best[t.key] || t.label; });
+  }
+  function drawSuggest(){
+    var list = form.cat ? suggestions(form.cat) : [];
+    var cur = noteKey($("note").value);
+    $("suggest").innerHTML = list.map(function(s){
+      return '<button type="button" class="chip" data-s="' + esc(s) + '" aria-pressed="' + (noteKey(s) === cur && cur ? "true" : "false") + '">' + esc(s) + '</button>';
+    }).join("");
+  }
+  $("suggest").addEventListener("click", function(ev){
+    var b = ev.target.closest(".chip"); if (!b) return;
+    var s = b.getAttribute("data-s");
+    $("note").value = (noteKey($("note").value) === noteKey(s)) ? "" : s;
+    drawSuggest();
+  });
+  $("note").addEventListener("input", drawSuggest);
+
+  /* date */
+  function setDateMode(m, value){
+    form.dateMode = m;
+    Array.prototype.forEach.call($("datechips").querySelectorAll(".chip"), function(c){
+      c.setAttribute("aria-pressed", c.getAttribute("data-d") === m ? "true" : "false");
+    });
+    $("datepick").classList.toggle("hide", m !== "pick");
+    if (m === "pick"){
+      $("datepick").max = today();
+      $("datepick").value = value || $("datepick").value || daysAgo(2);
+    }
+  }
+  function formDate(){
+    if (form.dateMode === "0") return today();
+    if (form.dateMode === "1") return daysAgo(1);
+    var v = $("datepick").value;
+    return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
+  }
+  $("datechips").addEventListener("click", function(ev){
+    var b = ev.target.closest(".chip"); if (!b) return;
+    setDateMode(b.getAttribute("data-d"));
+  });
+
+  function drawForm(){
+    Array.prototype.forEach.call($("cats").querySelectorAll(".cat"), function(b){
+      b.setAttribute("aria-pressed", b.getAttribute("data-cat") === form.cat ? "true" : "false");
+    });
+    var cn = $("catname");
+    if (form.cat){ cn.textContent = CAT[form.cat].name; cn.classList.remove("none"); }
+    else { cn.textContent = "Tap one of the pictures."; cn.classList.add("none"); }
+    drawAmount();
+    drawSuggest();
+    $("save").disabled = !(form.cat && bufCents(form.buf) > 0);
+    $("save").textContent = form.editId ? "Save changes" : "Save it";
+  }
+
+  function resetForm(){
+    form = { cat:null, buf:"", note:"", dateMode:"0", date:today(), editId:null };
+    $("note").value = "";
+    setDateMode("0");
+    $("editbar").classList.add("hide");
+    $("editbtns").classList.add("hide");
+    $("add-err").classList.add("hide");
+    drawForm();
+  }
+
+  function askToKeep(){
+    /* Ask the browser to treat this site's storage as "persistent", so it isn't
+       cleared automatically when the phone runs low on space. Harmless if refused. */
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+  }
+
+  $("save").addEventListener("click", function(){
+    var cents = bufCents(form.buf), date = formDate(), note = $("note").value.trim().replace(/\s+/g, " ");
+    var err = "";
+    if (!form.cat) err = "Pick what kind of thing it was first.";
+    else if (!(cents > 0)) err = "Type how much it cost.";
+    else if (!date) err = "Pick the day it happened.";
+    else if (date > today()) err = "That day hasn't happened yet. Pick today or earlier.";
+    if (err){ $("add-err").textContent = err; $("add-err").classList.remove("hide"); return; }
+
+    var now = Date.now();
+    if (form.editId){
+      var e = byId(form.editId);
+      if (e){ e.cat = form.cat; e.cents = cents; e.note = note; e.date = date; e.updated = now; }
+      persist();
+      var id = form.editId;
+      resetForm();
+      show("list");
+      flashRow(id);
+      toast("Changed &middot; <b>" + money(cents) + "</b>", null);
+      return;
+    }
+
+    var entry = { id:uid(), cat:form.cat, cents:cents, note:note, date:date, created:now, updated:now };
+    entries.push(entry);
+    persist();
+    askToKeep();
+
+    var tile = $("cats").querySelector('[data-cat="' + form.cat + '"]');
+    if (tile){ tile.classList.remove("stamp"); void tile.offsetWidth; tile.classList.add("stamp"); }
+
+    showTotals(entry);
+    resetForm();
+    toast("Saved &middot; " + esc(CAT[entry.cat].name) + " <b>" + money(cents) + "</b>", entry.id);
+  });
+
+  /* ================= editing ================= */
+  function startEdit(id){
+    var e = byId(id); if (!e) return;
+    show("add");
+    form = { cat:e.cat, buf:centsBuf(e.cents), note:e.note, dateMode:"pick", date:e.date, editId:id };
+    $("note").value = e.note || "";
+    if (e.date === today()) setDateMode("0");
+    else if (e.date === daysAgo(1)) setDateMode("1");
+    else setDateMode("pick", e.date);
+    $("edit-what").textContent = CAT[e.cat].name + " on " + niceDate(e.date);
+    $("editbar").classList.remove("hide");
+    $("editbtns").classList.remove("hide");
+    $("working").classList.add("hide");
+    drawForm();
+    window.scrollTo(0, 0);
+  }
+  $("edit-cancel").addEventListener("click", function(){ resetForm(); show("list"); });
+  $("del").addEventListener("click", function(){
+    var e = byId(form.editId); if (!e) return;
+    e.deleted = true; e.updated = Date.now(); persist();
+    var label = CAT[e.cat].name + " " + money(e.cents);
+    resetForm(); show("list");
+    toast("Deleted &middot; " + esc(label), null, function(){ e.deleted = false; e.updated = Date.now(); persist(); drawList(); });
+  });
+  /* repeat a regular bill: same kind, amount and detail, dated today */
+  $("again").addEventListener("click", function(){
+    var e = byId(form.editId); if (!e) return;
+    var src = { cat:e.cat, cents:e.cents, note:e.note };
+    resetForm();
+    form.cat = src.cat; form.buf = centsBuf(src.cents);
+    $("note").value = src.note || "";
+    drawForm();
+    window.scrollTo(0, 0);
+    toast("Copied. Check it, then tap <b>Save it</b>.", null);
+  });
+
+  /* ================= month total after saving ================= */
+  function showTotals(entry){
+    var ym = ymOf(entry.date), catTot = 0;
+    live().forEach(function(e){ if (e.cat === entry.cat && ymOf(e.date) === ym) catTot += e.cents; });
+    $("w-rlb").textContent = "Spent in " + MONTHS[+ym.slice(5,7)-1];
+    $("w-rvl").textContent = money(monthTotal(ym));
+    $("w-also").innerHTML = esc(CAT[entry.cat].name) + " this month: <b>" + money(catTot) + "</b>";
+    $("working").classList.remove("hide");
+  }
+
+  /* ================= toast with Undo / Edit ================= */
+  var toastTimer = null, toastId = null, toastUndo = null;
+  function toast(html, entryId, undoFn){
+    toastId = entryId; toastUndo = undoFn || null;
+    $("toast-text").innerHTML = html;
+    $("toast-undo").classList.toggle("hide", !(entryId || undoFn));
+    $("toast-edit").classList.toggle("hide", !entryId);
+    $("toast").classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 7000);
+  }
+  function hideToast(){ $("toast").classList.remove("show"); toastId = null; toastUndo = null; }
+  $("toast-undo").addEventListener("click", function(){
+    if (toastUndo){ toastUndo(); hideToast(); return; }
+    if (!toastId) return;
+    /* a brand-new entry that is undone is simply removed, never shared */
+    entries = entries.filter(function(e){ return e.id !== toastId; });
+    persist();
+    $("working").classList.add("hide");
+    hideToast();
+    drawForm();
+  });
+  $("toast-edit").addEventListener("click", function(){ var id = toastId; hideToast(); if (id) startEdit(id); });
+
+  /* ================= MONTH ================= */
+  var viewYM = ymOf(today());
+  var monthMode = "type";
+  var openCat = {};
+  var mmCat = "all";
+
+  function earliestYM(){
+    var m = ymOf(today());
+    live().forEach(function(e){ var y = ymOf(e.date); if (y < m) m = y; });
+    return m;
+  }
+  function drawNav(prefix){
+    $(prefix+"-label").textContent = ymLong(viewYM);
+    $(prefix+"-next").disabled = viewYM >= ymOf(today());
+    $(prefix+"-prev").disabled = viewYM <= earliestYM();
+  }
+  function shiftMonth(n){ viewYM = ymShift(viewYM, n); openCat = {}; }
+  $("m-prev").addEventListener("click", function(){ shiftMonth(-1); drawMonth(); });
+  $("m-next").addEventListener("click", function(){ shiftMonth(1); drawMonth(); });
+  $("l-prev").addEventListener("click", function(){ shiftMonth(-1); drawList(); });
+  $("l-next").addEventListener("click", function(){ shiftMonth(1); drawList(); });
+
+  function setMonthMode(m){
+    monthMode = m;
+    $("mv-type").setAttribute("aria-pressed", m === "type" ? "true" : "false");
+    $("mv-months").setAttribute("aria-pressed", m === "months" ? "true" : "false");
+    $("mv-type-pane").classList.toggle("hide", m !== "type");
+    $("mv-months-pane").classList.toggle("hide", m !== "months");
+    drawMonth();
+  }
+  $("mv-type").addEventListener("click", function(){ setMonthMode("type"); });
+  $("mv-months").addEventListener("click", function(){ setMonthMode("months"); });
+
+  function drawMonth(){
+    drawNav("m");
+    if (monthMode === "months"){ drawMonthByMonth(); return; }
+    var inMonth = live().filter(function(e){ return ymOf(e.date) === viewYM; });
+    var total = 0, by = {}, best = bestLabels();
+    inMonth.forEach(function(e){
+      total += e.cents;
+      if (!by[e.cat]) by[e.cat] = { cents:0, n:0, notes:{} };
+      var b = by[e.cat]; b.cents += e.cents; b.n++;
+      var k = noteKey(e.note);
+      if (!b.notes[k]) b.notes[k] = { label: e.note ? (best[k] || e.note.trim()) : "", cents:0, n:0 };
+      b.notes[k].cents += e.cents; b.notes[k].n++;
+    });
+    $("m-tlb").textContent = "Spent in " + MONTHS[+viewYM.slice(5,7)-1];
+    $("m-total").textContent = money(total);
+    $("m-count").textContent = inMonth.length === 0 ? "Nothing entered for this month."
+      : inMonth.length + (inMonth.length === 1 ? " purchase" : " purchases") + " in " + Object.keys(by).length + (Object.keys(by).length === 1 ? " kind" : " kinds");
+    var ids = Object.keys(by).sort(function(a,b){ return by[b].cents - by[a].cents; });
+    var max = ids.length ? by[ids[0]].cents : 1;
+    if (!ids.length){
+      $("m-cats").innerHTML = '<p class="empty">When you add things, they show up here, biggest first.</p>';
+      return;
+    }
+    $("m-cats").innerHTML = ids.map(function(id, idx){
+      var b = by[id], pct = Math.max(2, Math.round(b.cents / max * 100));
+      var open = !!openCat[id];
+      var notes = Object.keys(b.notes).map(function(k){ return b.notes[k]; })
+        .sort(function(x,y){ if (!x.label) return 1; if (!y.label) return -1; return y.cents - x.cents; });
+      var detail = notes.map(function(n){
+        return '<div class="dline"><span class="k' + (n.label ? "" : " un") + '">' + (n.label ? esc(n.label) : "no detail") +
+               (n.n > 1 ? '<small>&times;' + n.n + '</small>' : '') + '</span><span class="v">' + money(n.cents) + '</span></div>';
+      }).join("");
+      return '<div class="brow' + (open ? " open" : "") + '">' +
+        '<button type="button" class="bhead" data-cat="' + id + '" aria-expanded="' + open + '">' +
+          '<span class="ibox">' + svg(id) + '</span>' +
+          '<span class="bname">' + esc(CAT[id].name) + '</span>' +
+          '<span class="bamt">' + money(b.cents) + '</span>' +
+          '<span class="chev">' + CHEV + '</span>' +
+          '<span class="bar' + (idx === 0 ? " hot" : "") + '"><i style="width:' + pct + '%"></i></span>' +
+        '</button>' +
+        (open ? '<div class="bdetail">' + detail +
+          '<button type="button" class="lnk" data-months="' + id + '">See ' + esc(CAT[id].name) + ' month by month &rarr;</button></div>' : '') +
+      '</div>';
+    }).join("");
+  }
+  $("m-cats").addEventListener("click", function(ev){
+    var mm = ev.target.closest("[data-months]");
+    if (mm){ mmCat = mm.getAttribute("data-months"); setMonthMode("months"); return; }
+    var h = ev.target.closest(".bhead"); if (!h) return;
+    var id = h.getAttribute("data-cat");
+    openCat[id] = !openCat[id];
+    drawMonth();
+  });
+
+  function drawMonthByMonth(){
+    var used = {};
+    live().forEach(function(e){ used[e.cat] = 1; });
+    var chips = [{ id:"all", name:"Everything" }].concat(CATS.filter(function(c){ return used[c.id]; }));
+    if (mmCat !== "all" && !used[mmCat]) mmCat = "all";
+    $("mm-chips").innerHTML = chips.map(function(c){
+      return '<button type="button" class="chip" data-c="' + c.id + '" aria-pressed="' + (c.id === mmCat) + '">' +
+        (c.id === "all" ? "" : svg(c.id)) + esc(c.id === "all" ? c.name : CAT[c.id].short) + '</button>';
+    }).join("");
+    var first = earliestYM(), months = [];
+    for (var i = 0; i < 12; i++){
+      var ym = ymShift(viewYM, -i);
+      if (ym < first) break;
+      months.push(ym);
+    }
+    var tot = {}; months.forEach(function(m){ tot[m] = 0; });
+    live().forEach(function(e){
+      var m = ymOf(e.date);
+      if (m in tot && (mmCat === "all" || e.cat === mmCat)) tot[m] += e.cents;
+    });
+    var max = 1; months.forEach(function(m){ if (tot[m] > max) max = tot[m]; });
+    $("mm-rows").innerHTML = months.map(function(m){
+      var pct = tot[m] ? Math.max(2, Math.round(tot[m] / max * 100)) : 0;
+      return '<div class="mrow' + (m === viewYM ? " sel" : "") + '"><span class="ml">' + ymShort(m) + '</span>' +
+        '<span class="bar' + (m === viewYM ? " hot" : "") + '"><i style="width:' + pct + '%"></i></span>' +
+        '<span class="v">' + money(tot[m]) + '</span></div>';
+    }).join("") || '<p class="empty">Nothing entered yet.</p>';
+  }
+  $("mm-chips").addEventListener("click", function(ev){
+    var b = ev.target.closest(".chip"); if (!b) return;
+    mmCat = b.getAttribute("data-c"); drawMonthByMonth();
+  });
+
+  /* ================= LIST ================= */
+  var onlyMissing = false;
+  $("l-filter").addEventListener("click", function(){ onlyMissing = !onlyMissing; drawList(); });
+
+  function drawList(){
+    drawNav("l");
+    var inMonth = live().filter(function(e){ return ymOf(e.date) === viewYM; });
+    var missing = inMonth.filter(function(e){ return !e.note; }).length;
+    $("l-filter").setAttribute("aria-pressed", onlyMissing ? "true" : "false");
+    $("l-filter").textContent = "Missing details only (" + missing + ")";
+    var rows = onlyMissing ? inMonth.filter(function(e){ return !e.note; }) : inMonth;
+    rows.sort(function(a,b){ return a.date === b.date ? b.created - a.created : (a.date < b.date ? 1 : -1); });
+    if (!rows.length){
+      $("l-rows").innerHTML = '<p class="empty">' + (onlyMissing ? "Every entry this month has its details filled in." : "Nothing entered for " + ymLong(viewYM) + ".") + '</p>';
+      return;
+    }
+    var html = "", day = null, dayTot = {};
+    rows.forEach(function(e){ dayTot[e.date] = (dayTot[e.date] || 0) + e.cents; });
+    rows.forEach(function(e){
+      if (e.date !== day){
+        if (day) html += '</div>';
+        day = e.date;
+        html += '<div class="day"><div class="dayhead"><span>' + (e.date === today() ? "Today &middot; " : e.date === daysAgo(1) ? "Yesterday &middot; " : "") + niceDate(e.date) + '</span><span>' + money(dayTot[e.date]) + '</span></div>';
+      }
+      html += '<button type="button" class="erow" data-id="' + e.id + '">' +
+        '<span class="ibox">' + svg(e.cat) + '</span>' +
+        '<span class="tx"><span class="ti">' + (e.note ? esc(e.note) : esc(CAT[e.cat].name)) + '</span>' +
+        '<span class="mt">' + (e.note ? esc(CAT[e.cat].name) : 'No detail<span class="pill">Add detail</span>') + '</span></span>' +
+        '<span class="v">' + money(e.cents) + '</span></button>';
+    });
+    html += '</div>';
+    $("l-rows").innerHTML = html;
+  }
+  $("l-rows").addEventListener("click", function(ev){
+    var b = ev.target.closest(".erow"); if (!b) return;
+    startEdit(b.getAttribute("data-id"));
+  });
+  function flashRow(id){
+    var r = $("l-rows").querySelector('[data-id="' + id + '"]');
+    if (r){ r.classList.add("flash"); r.scrollIntoView({ block:"center" }); }
+  }
+
+  /* ================= SHARE ================= */
+  function agoText(ts){
+    if (!ts) return "No copy made yet.";
+    var days = Math.floor((Date.now() - ts) / 86400000);
+    return "Last copy made " + (days <= 0 ? "today" : days === 1 ? "yesterday" : days + " days ago") + ".";
+  }
+  function drawShare(){ $("s-last").textContent = agoText(load("pb_lastcopy", 0)); }
+
+  function downloadBlob(blob, name){
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1500);
+  }
+  $("s-share").addEventListener("click", function(){
+    var payload = { app:"pocket-budget", format:1, exported:new Date().toISOString(), entries:entries };
+    var name = "pocket-budget-" + today() + ".json";
+    var blob = new Blob([JSON.stringify(payload, null, 1)], { type:"application/json" });
+    var done = function(){ save("pb_lastcopy", Date.now()); drawShare(); };
+    var file = null;
+    try { file = new File([blob], name, { type:"application/json" }); } catch(e){}
+    /* On phones, the Share sheet can send the file by Messages, Mail or save it to Files.
+       Where that isn't available (most desktop browsers), it downloads instead. */
+    if (file && navigator.canShare && navigator.canShare({ files:[file] })){
+      navigator.share({ files:[file], title:"Pocket Budget copy" }).then(done).catch(function(err){
+        if (err && err.name === "AbortError") return;
+        downloadBlob(blob, name); done();
+      });
+    } else { downloadBlob(blob, name); done(); }
+  });
+
+  /* Merge rule: entries are matched by id. A new id is added; a known id is replaced
+     only if the incoming copy was changed more recently. Deletions travel as "deleted" marks. */
+  function mergeIn(list){
+    var added = 0, changed = 0, same = 0, have = {};
+    entries.forEach(function(e){ have[e.id] = e; });
+    list.forEach(function(x){
+      if (!x || typeof x.id !== "string" || !CAT[x.cat] || typeof x.cents !== "number" ||
+          !(x.cents >= 0) || Math.round(x.cents) !== x.cents || !/^\d{4}-\d{2}-\d{2}$/.test(x.date)) return;
+      var clean = { id:x.id, cat:x.cat, cents:x.cents, note:String(x.note || "").slice(0,60), date:x.date,
+                    created:+x.created || 0, updated:+x.updated || 0 };
+      if (x.deleted) clean.deleted = true;
+      var mine = have[x.id];
+      if (!mine){ entries.push(clean); have[x.id] = clean; if (!clean.deleted) added++; }
+      else if (clean.updated > (mine.updated || 0)){ Object.keys(mine).forEach(function(k){ delete mine[k]; }); Object.assign(mine, clean); changed++; }
+      else same++;
+    });
+    persist();
+    return { added:added, changed:changed, same:same };
+  }
+  $("s-file").addEventListener("change", function(){
+    var f = this.files && this.files[0], msg = $("s-msg"), input = this;
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      var data = null;
+      try { data = JSON.parse(rd.result); } catch(e){}
+      msg.classList.remove("hide","good","oops");
+      if (!data || data.app !== "pocket-budget" || !Array.isArray(data.entries)){
+        msg.classList.add("oops");
+        msg.textContent = "That file isn't a Pocket Budget copy. Look for a name like pocket-budget-2026-10-22.json.";
+      } else {
+        var r = mergeIn(data.entries);
+        msg.classList.add("good");
+        var bits = [];
+        if (r.added) bits.push(r.added + " new " + (r.added === 1 ? "entry" : "entries") + " added");
+        if (r.changed) bits.push(r.changed + (r.changed === 1 ? " entry" : " entries") + " updated");
+        msg.textContent = bits.length ? "Done. " + bits.join(", ") + "." : "Done. You already had everything in that copy.";
+      }
+      input.value = "";
+    };
+    rd.readAsText(f);
+  });
+
+  $("s-csv").addEventListener("click", function(){
+    function q(s){ s = String(s); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+    var rows = live().slice().sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : a.created - b.created; });
+    var csv = "Date,Month,Category,Detail,Amount\r\n" + rows.map(function(e){
+      return [e.date, ymOf(e.date), CAT[e.cat].name, e.note || "", (e.cents/100).toFixed(2)].map(q).join(",");
+    }).join("\r\n") + "\r\n";
+    /* the leading BOM makes Excel read the file as UTF-8 */
+    downloadBlob(new Blob(["﻿" + csv], { type:"text/csv" }), "pocket-budget-" + today() + ".csv");
+  });
+
+  /* ================= How it works ================= */
+  /* Little pictures for each step, drawn in the same line style as the category icons. */
+  var T = 'stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  var M = 'var(--signal-fill)';
+  var GPIC = [
+    /* 1 add: three tiles, one picked, then a price */
+    '<svg viewBox="0 0 200 130"><g ' + T + '><rect x="14" y="22" width="44" height="44" rx="9"/><rect x="66" y="22" width="44" height="44" rx="9" stroke="' + M + '" fill="var(--signal-soft)"/><rect x="118" y="22" width="44" height="44" rx="9"/></g>' +
+      '<g transform="translate(76 32) scale(1)" ' + T + ' stroke="' + M + '">' + ICON.eating + '</g>' +
+      '<rect x="40" y="82" width="120" height="34" rx="9" fill="var(--signal-soft)" stroke="' + M + '" stroke-width="2"/><text x="100" y="106" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="20" fill="currentColor">$6.25</text></svg>',
+    /* 2 details: a text box and suggestion buttons */
+    '<svg viewBox="0 0 200 130"><rect x="20" y="20" width="160" height="34" rx="8" ' + T + '/><text x="32" y="43" font-family="IBM Plex Sans, sans-serif" font-size="15" fill="currentColor">Starbucks</text>' +
+      '<rect x="20" y="70" width="78" height="28" rx="14" fill="var(--route)"/><text x="59" y="89" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="var(--route-on)">Starbucks</text>' +
+      '<rect x="106" y="70" width="74" height="28" rx="14" ' + T + '/><text x="143" y="89" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="currentColor">Panera</text></svg>',
+    /* 3 fix: undo arrow and a pencil */
+    '<svg viewBox="0 0 200 130"><g ' + T + ' stroke-width="3"><path d="M60 50h50a24 24 0 0 1 0 48H70"/><path d="M74 34 58 50l16 16"/></g><g ' + T + ' stroke="' + M + '" stroke-width="3"><path d="m138 92 30-30 10 10-30 30h-10z"/></g></svg>',
+    /* 4 month: total and bars */
+    '<svg viewBox="0 0 200 130"><text x="24" y="38" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="24" fill="' + M + '">$248.99</text>' +
+      '<rect x="24" y="56" width="150" height="10" rx="5" fill="' + M + '"/><rect x="24" y="78" width="100" height="10" rx="5" fill="var(--route)"/><rect x="24" y="100" width="40" height="10" rx="5" fill="var(--route)"/></svg>',
+    /* 5 list: rows */
+    '<svg viewBox="0 0 200 130"><g ' + T + '><rect x="22" y="18" width="26" height="26" rx="6"/><rect x="22" y="52" width="26" height="26" rx="6"/><rect x="22" y="86" width="26" height="26" rx="6"/><path d="M58 26h70M58 60h28M58 94h64" stroke-width="3"/><path d="M58 36h40M58 104h40" stroke-width="2" opacity=".5"/></g>' +
+      '<rect x="94" y="52" width="36" height="16" rx="8" fill="var(--signal-soft)" stroke="' + M + '" stroke-width="1.5"/><g font-family="IBM Plex Mono, monospace" font-weight="600" font-size="12" fill="currentColor"><text x="178" y="35" text-anchor="end">6.25</text><text x="178" y="69" text-anchor="end">65.00</text><text x="178" y="103" text-anchor="end">8.99</text></g></svg>',
+    /* 6 share: file with arrow out of a box */
+    '<svg viewBox="0 0 200 130"><g ' + T + ' stroke-width="3"><path d="M74 58H64a8 8 0 0 0-8 8v40a8 8 0 0 0 8 8h72a8 8 0 0 0 8-8V66a8 8 0 0 0-8-8h-10"/><path d="M100 84V14"/><path d="m82 32 18-18 18 18"/></g><circle cx="100" cy="84" r="5" fill="' + M + '"/></svg>',
+    /* 7 home screen: phone with app grid, one marigold */
+    '<svg viewBox="0 0 200 130"><rect x="68" y="8" width="64" height="114" rx="12" ' + T + ' stroke-width="3"/><g fill="var(--hair)"><rect x="79" y="24" width="16" height="16" rx="4"/><rect x="105" y="24" width="16" height="16" rx="4"/><rect x="79" y="50" width="16" height="16" rx="4"/></g><rect x="105" y="50" width="16" height="16" rx="4" fill="' + M + '"/><path d="M92 110h16" ' + T + '/></svg>'
+  ];
+  var GUIDE = [
+    ["Add what you bought",
+     "Tap the picture for the kind of thing it was. Type what it cost on the number pad, then tap <b>Save it</b>. The box under the button shows your total for the month so far."],
+    ["Details if you want them",
+     "<b>What or where?</b> is for things like Starbucks or iPhone. Skip it if you're in a hurry. Places you use a lot turn into buttons, so you only type them once."],
+    ["Fix a mistake",
+     "Right after you save, tap <b>Undo</b> at the bottom of the screen. Later on, go to <b>List</b>, tap the entry, change anything and tap <b>Save changes</b>, or tap <b>Delete</b>."],
+    ["See your month",
+     "<b>Month</b> shows what you've spent and where it went, biggest first. Tap a line to see what's in it. <b>Month by month</b> lines up the months side by side."],
+    ["Everything, day by day",
+     "<b>List</b> shows each purchase under its day. Tap <b>Missing details only</b> to find the ones you saved without a detail and fill them in."],
+    ["Share a copy",
+     "On <b>Share</b>, tap <b>Share a copy</b> to send all your entries as one small file to someone you choose. Save one to Files now and then too: if you ever change phones, open it to get everything back."],
+    ["Keep it one tap away",
+     "In Safari, tap the Share button, then <b>Add to Home Screen</b>. Pocket Budget opens with one tap and works with no signal. Your entries stay on this phone."]
+  ];
+  var gi = 0;
+  $("g-dots").innerHTML = GUIDE.map(function(){ return "<i></i>"; }).join("");
+  function drawGuide(){
+    $("g-count").textContent = (gi+1) + " of " + GUIDE.length;
+    $("g-pic").innerHTML = GPIC[gi];
+    $("g-title").textContent = GUIDE[gi][0];
+    $("g-text").innerHTML = GUIDE[gi][1];
+    Array.prototype.forEach.call($("g-dots").children, function(d, i){ d.className = i === gi ? "on" : ""; });
+    $("g-back").disabled = gi === 0;
+    $("g-next").textContent = gi === GUIDE.length - 1 ? "Done" : "Next";
+  }
+  /* <dialog> + showModal() is the browser's built-in pop-up: it dims the page behind,
+     keeps keyboard focus inside, and closes with Escape, with no extra code. */
+  function openGuide(){
+    gi = 0; drawGuide();
+    var d = $("guide");
+    if (d.showModal) d.showModal(); else d.setAttribute("open", "");
+    store("pb_seenguide", "1");
+  }
+  function closeGuide(){ var d = $("guide"); if (d.close) d.close(); else d.removeAttribute("open"); }
+  $("help-open").addEventListener("click", openGuide);
+  $("g-close").addEventListener("click", closeGuide);
+  $("g-back").addEventListener("click", function(){ if (gi > 0){ gi--; drawGuide(); } });
+  $("g-next").addEventListener("click", function(){ if (gi < GUIDE.length - 1){ gi++; drawGuide(); } else closeGuide(); });
+  /* tapping the dimmed area outside the box closes it too */
+  $("guide").addEventListener("click", function(ev){ if (ev.target === this) closeGuide(); });
+
+  /* ================= start ================= */
+  resetForm();
+  /* first visit ever, with nothing entered yet: show the walkthrough once */
+  if (!store("pb_seenguide") && !entries.length) setTimeout(openGuide, 350);
+
+  /* expose the pure arithmetic for testing */
+  window.__pb = { press:function(buf, k){ form.buf = buf; press(k); return form.buf; }, bufCents:bufCents, centsBuf:centsBuf, money:money, ymShift:ymShift, mergeIn:mergeIn };
+})();
+</script>
+
+<script>
+/* Keep working with no signal: cache the page after the first visit. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){ /* offline support is optional */ });
+  });
+}
+</script>
+</body>
+</html>
