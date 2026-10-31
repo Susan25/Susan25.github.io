@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mishaps">
+<meta name="theme-color" content="#EFF2F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101817" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<title>Mishaps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ============ TOKENS: light is the base ============ */
+:root{
+  --ground:#EFF2F1;
+  --surface:#FFFFFF;
+  --surface-2:#F5F8F7;
+  --ink:#141F1D;
+  --muted:#5B6A67;
+  --hair:#D3DBD9;
+  --route:#0E6E64;
+  --route-ink:#0E6E64;
+  --route-on:#FFFFFF;
+  --route-soft:#E2EFEC;
+  --signal:#B87615;
+  --signal-fill:#DE9A2E;
+  --signal-soft:#FBF0DC;
+  --ok:#2F6B4C;
+  --ok-soft:#E4F0E9;
+  --warn:#B0562F;
+  --warn-on:#FFFFFF;
+  --warn-soft:#FBEBE3;
+  --shadow:0 1px 2px rgba(20,31,29,.06), 0 6px 20px rgba(20,31,29,.06);
+  --focus:#0E6E64;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#101817;
+    --surface:#182221;
+    --surface-2:#1E2A28;
+    --ink:#E7EDEB;
+    --muted:#95A5A2;
+    --hair:#2C3A38;
+    --route:#2FA697;
+    --route-ink:#43BFAF;
+    --route-on:#08201E;
+    --route-soft:#17312D;
+    --signal:#EDB65E;
+    --signal-fill:#E0A340;
+    --signal-soft:#33291A;
+    --ok:#6FC095;
+    --ok-soft:#1B2E24;
+    --warn:#E29065;
+    --warn-on:#2A1408;
+    --warn-soft:#33221A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+    --focus:#43BFAF;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101817;
+  --surface:#182221;
+  --surface-2:#1E2A28;
+  --ink:#E7EDEB;
+  --muted:#95A5A2;
+  --hair:#2C3A38;
+  --route:#2FA697;
+  --route-ink:#43BFAF;
+  --route-on:#08201E;
+  --route-soft:#17312D;
+  --signal:#EDB65E;
+  --signal-fill:#E0A340;
+  --signal-soft:#33291A;
+  --ok:#6FC095;
+  --ok-soft:#1B2E24;
+  --warn:#E29065;
+  --warn-on:#2A1408;
+  --warn-soft:#33221A;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
+  --focus:#43BFAF;
+}
+
+*{box-sizing:border-box;}
+.hide{ display:none !important; }
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px; line-height:1.5; -webkit-text-size-adjust:100%;
+}
+.mono{ font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
+.wrap{ max-width:600px; margin:0 auto; padding:22px 16px 96px; display:flex; flex-direction:column; gap:14px; }
+
+/* ============ header ============ */
+.masthead{ display:flex; flex-direction:column; gap:3px; }
+.eyebrow{ font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--route-ink); }
+h1{ font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:800; font-size:clamp(30px,8vw,40px); line-height:1.02; letter-spacing:-.02em; margin:0; text-wrap:balance; }
+.dek{ color:var(--muted); font-size:14.5px; margin:2px 0 0; max-width:46ch; }
+h2{ font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:18px; letter-spacing:-.01em; margin:0; line-height:1.25; text-wrap:balance; }
+.sub{ color:var(--muted); font-size:13.5px; margin:3px 0 0; }
+
+/* ============ tabs ============ */
+.tabs{ display:flex; gap:4px; background:var(--surface-2); border:1px solid var(--hair); border-radius:11px; padding:4px; position:sticky; top:0; z-index:5; box-shadow:0 4px 10px -6px rgba(0,0,0,.18); }
+.tab{ flex:1; appearance:none; border:0; background:transparent; color:var(--muted); font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:14px; padding:10px 4px; border-radius:8px; cursor:pointer; min-height:42px; transition:background .16s ease,color .16s ease; }
+.tab[aria-selected="true"]{ background:var(--ink); color:var(--ground); }
+
+/* ============ cards, buttons ============ */
+.view{ display:flex; flex-direction:column; gap:14px; }
+.card{ background:var(--surface); border:1px solid var(--hair); border-radius:14px; padding:16px 16px 18px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px; }
+.flabel{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px; }
+.btn{
+  appearance:none; cursor:pointer; text-decoration:none;
+  font-family:"Archivo",Helvetica,Arial,sans-serif; font-weight:700; font-size:15px;
+  border-radius:10px; padding:12px 16px; min-height:50px;
+  border:1.5px solid var(--route); background:var(--route); color:var(--route-on);
+  transition:transform .1s ease, filter .16s ease;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; text-align:center;
+}
+.btn:hover{ filter:brightness(1.08); }
+.btn:active{ transform:translateY(1px); }
+.btn.ghost{ background:transparent; color:var(--route-ink); }
+.btn.ghost:hover{ background:var(--surface-2); filter:none; }
+.btn.sos{ background:var(--warn); border-color:var(--warn); color:var(--warn-on); }
+.btn.sosline{ background:transparent; border-color:var(--warn); color:var(--warn); }
+.btn.big{ font-size:17px; min-height:56px; }
+.btn[disabled]{ opacity:.42; cursor:not-allowed; transform:none; filter:none; }
+.btn svg{ width:20px; height:20px; flex:0 0 auto; }
+.btn-row{ display:flex; gap:9px; flex-wrap:wrap; }
+.btn-row .btn{ flex:1 1 auto; }
+.stack{ display:flex; flex-direction:column; gap:9px; }
+.lnk{ appearance:none; border:0; background:none; cursor:pointer; padding:6px 0; color:var(--route-ink); font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:14px; text-decoration:underline; text-underline-offset:3px; text-align:left; }
+.msg{ font-size:13.5px; border-radius:9px; padding:9px 12px; line-height:1.45; margin:0; }
+.msg.good{ background:var(--ok-soft); color:var(--ok); }
+.msg.oops{ background:var(--warn-soft); color:var(--warn); }
+.note{ font-size:13px; color:var(--muted); border-left:3px solid var(--hair); padding-left:11px; line-height:1.5; margin:0; }
+.note.spot{ border-left-color:var(--signal-fill); color:var(--ink); background:var(--signal-soft); padding:9px 11px; border-radius:0 8px 8px 0; }
+input[type="text"],input[type="tel"],textarea{
+  font-family:"IBM Plex Sans",sans-serif; font-size:16px; color:var(--ink);
+  background:var(--surface-2); border:1.5px solid var(--hair); border-radius:9px; padding:11px 12px; width:100%; min-height:48px;
+}
+input[type="tel"]{ font-family:"IBM Plex Mono",monospace; font-weight:600; }
+textarea{ min-height:76px; resize:vertical; }
+input:focus-visible,button:focus-visible,a:focus-visible,textarea:focus-visible,label.btn:focus-within{ outline:2.5px solid var(--focus); outline-offset:2px; }
+.field{ display:flex; flex-direction:column; gap:7px; }
+.check{ display:flex; align-items:flex-start; gap:11px; font-size:15px; cursor:pointer; padding:4px 0; }
+.check input{ width:22px; height:22px; accent-color:var(--route); margin:1px 0 0; flex:0 0 auto; }
+.filebtn{ position:relative; }
+.filebtn input{ position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
+
+/* ============ calm button + banner ============ */
+.calmbtn{
+  appearance:none; cursor:pointer; width:100%;
+  display:flex; align-items:center; gap:12px; text-align:left;
+  background:var(--signal-soft); border:1.5px solid var(--signal-fill); border-radius:14px;
+  padding:13px 15px; color:var(--ink); min-height:62px;
+  font-family:"Archivo",sans-serif; font-weight:700; font-size:17px;
+}
+.calmbtn svg{ width:30px; height:30px; color:var(--signal); flex:0 0 auto; }
+.calmbtn small{ display:block; font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:13px; color:var(--muted); }
+.calmbar{
+  display:flex; align-items:center; gap:10px;
+  background:var(--signal-soft); border:1.5px solid var(--signal-fill); border-radius:12px; padding:8px 8px 8px 14px;
+  font-size:14.5px;
+}
+.calmbar b{ font-family:"Archivo",sans-serif; }
+.calmbar span{ flex:1; }
+.calmbar .btn{ min-height:40px; padding:6px 12px; font-size:14px; background:transparent; color:var(--signal); border-color:var(--signal-fill); }
+
+/* ============ mishap list ============ */
+.group h2{ font-size:13px; font-family:"IBM Plex Mono",monospace; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:4px 2px 6px; }
+.mrow{
+  appearance:none; cursor:pointer; width:100%; text-align:left; color:var(--ink); font:inherit;
+  display:grid; grid-template-columns:44px 1fr 18px; align-items:center; gap:12px;
+  background:var(--surface); border:1px solid var(--hair); border-radius:12px; padding:11px 12px; min-height:64px;
+  box-shadow:var(--shadow); margin-bottom:8px;
+}
+.mrow:active{ transform:scale(.99); }
+.ibox{ width:44px; height:44px; border-radius:11px; background:var(--route-soft); color:var(--route-ink); display:flex; align-items:center; justify-content:center; }
+.ibox svg{ width:26px; height:26px; }
+.mrow .ti{ font-family:"Archivo",sans-serif; font-weight:700; font-size:16.5px; line-height:1.25; }
+.mrow .mt{ display:block; font-family:"IBM Plex Sans",sans-serif; font-weight:400; font-size:12.5px; color:var(--muted); margin-top:2px; }
+.mrow .chev{ color:var(--muted); }
+.search{ position:relative; }
+.search svg{ position:absolute; left:12px; top:50%; transform:translateY(-50%); width:20px; height:20px; color:var(--muted); pointer-events:none; }
+.search input{ padding-left:40px; }
+.empty{ color:var(--muted); font-size:14.5px; text-align:center; padding:18px 10px; margin:0; }
+
+/* ============ scenario player ============ */
+.runhead{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.backlink{ appearance:none; border:0; background:none; cursor:pointer; color:var(--route-ink); font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:15px; display:inline-flex; align-items:center; gap:4px; padding:8px 4px 8px 0; min-height:44px; }
+.backlink svg{ width:20px; height:20px; }
+.runtitle{ font-family:"Archivo",sans-serif; font-weight:800; font-size:22px; line-height:1.15; margin:0; letter-spacing:-.01em; }
+.calmchip{
+  appearance:none; cursor:pointer; flex:0 0 auto;
+  border:1.5px solid var(--signal-fill); background:var(--signal-soft); color:var(--ink);
+  border-radius:999px; padding:6px 12px; min-height:40px; font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:13.5px;
+}
+.stepcard{ gap:14px; padding:20px 18px 20px; }
+.stepcard.danger{ border-left:6px solid var(--warn); }
+.stepcard .count{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.stepcard.danger .count{ color:var(--warn); }
+.steptext{ font-family:"Archivo",sans-serif; font-weight:700; font-size:clamp(23px,6.4vw,28px); line-height:1.2; letter-spacing:-.01em; margin:0; text-wrap:pretty; }
+.more{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; }
+.more li{ position:relative; padding-left:20px; font-size:17px; line-height:1.45; }
+.more li::before{ content:""; position:absolute; left:3px; top:.62em; width:8px; height:8px; border-radius:50%; background:var(--route); }
+.stepcard.danger .more li::before{ background:var(--warn); }
+.calmline{ display:none; background:var(--signal-soft); border-left:4px solid var(--signal-fill); border-radius:0 10px 10px 0; padding:11px 13px; font-size:17px; line-height:1.45; }
+body.calm .calmline{ display:block; }
+details.why summary{ cursor:pointer; color:var(--route-ink); font-weight:600; font-size:14.5px; list-style:none; min-height:32px; display:inline-flex; align-items:center; gap:6px; }
+details.why summary::-webkit-details-marker{ display:none; }
+details.why summary::before{ content:"+"; font-family:"IBM Plex Mono",monospace; font-weight:600; width:18px; height:18px; border:1.5px solid currentColor; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:13px; line-height:1; }
+details.why[open] summary::before{ content:"\2212"; }
+details.why p{ margin:6px 0 0; font-size:15px; color:var(--muted); }
+body.calm details.why{ display:none; }
+.homepic{ display:flex; flex-direction:column; gap:7px; background:var(--surface-2); border:1px solid var(--hair); border-radius:12px; padding:10px; }
+.homepic img{ width:100%; max-height:260px; object-fit:cover; border-radius:8px; display:block; background:var(--hair); }
+.homepic b{ font-family:"Archivo",sans-serif; font-size:15px; }
+.homepic p{ margin:0; font-size:15px; }
+.homehint{ font-size:13px; color:var(--muted); margin:0; }
+body.calm .homehint{ display:none; }
+.calls{ display:flex; flex-direction:column; gap:8px; }
+.callrow{ display:flex; gap:8px; }
+.callrow .btn:first-child{ flex:1 1 auto; }
+.callrow .btn.ghost{ flex:0 0 auto; min-width:76px; }
+.callnote{ font-size:13px; color:var(--muted); margin:-3px 0 2px 2px; }
+.locbox{ background:var(--surface-2); border:1px solid var(--hair); border-radius:10px; padding:10px 12px; font-size:15px; display:flex; flex-direction:column; gap:8px; }
+.opts{ display:flex; flex-direction:column; gap:10px; }
+.opt{
+  appearance:none; cursor:pointer; text-align:left; width:100%;
+  background:var(--surface); border:2px solid var(--route); color:var(--ink); border-radius:12px;
+  padding:14px 16px; min-height:60px; font-family:"Archivo",sans-serif; font-weight:700; font-size:17px; line-height:1.3;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.opt svg{ width:20px; height:20px; color:var(--route-ink); flex:0 0 auto; }
+.opt:active{ background:var(--route-soft); }
+.donebanner{ display:flex; align-items:center; gap:12px; background:var(--ok-soft); color:var(--ok); border-radius:12px; padding:12px 14px; font-family:"Archivo",sans-serif; font-weight:700; font-size:17px; }
+.donebanner svg{ width:28px; height:28px; flex:0 0 auto; }
+
+/* fixed call bar while a mishap is open */
+.callbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:8;
+  background:var(--surface); border-top:1px solid var(--hair);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 18px rgba(0,0,0,.08);
+}
+.callbar .in{ max-width:600px; margin:0 auto; display:flex; gap:9px; }
+.callbar .btn{ min-height:52px; }
+.callbar .btn:first-child{ flex:2 1 0; }
+.callbar .btn:last-child{ flex:1 1 0; }
+body.calm .callbar .btn{ min-height:64px; font-size:18px; }
+.wrap.run{ padding-bottom:130px; }
+
+/* ============ practice ============ */
+.prow{ grid-template-columns:44px 1fr auto; }
+.badge{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:3px 9px; white-space:nowrap; }
+.badge.none{ background:var(--surface-2); color:var(--muted); border:1px solid var(--hair); }
+.badge.tried{ background:var(--signal-soft); color:var(--signal); }
+.badge.clean{ background:var(--ok-soft); color:var(--ok); }
+.qtext{ font-family:"Archivo",sans-serif; font-weight:700; font-size:21px; line-height:1.3; margin:0; }
+.choice{
+  appearance:none; cursor:pointer; text-align:left; width:100%;
+  background:var(--surface); border:1.5px solid var(--hair); color:var(--ink); border-radius:12px;
+  padding:13px 15px; min-height:56px; font-family:"IBM Plex Sans",sans-serif; font-weight:500; font-size:16.5px; line-height:1.35;
+}
+.choice[disabled]{ cursor:default; }
+.choice.picked{ border-width:2.5px; }
+.choice.r-right,.choice.r-ok{ border-color:var(--ok); background:var(--ok-soft); }
+.choice.r-notfirst{ border-color:var(--signal-fill); background:var(--signal-soft); }
+.choice.r-not{ border-color:var(--warn); background:var(--warn-soft); }
+.choice.r-never{ border-color:var(--warn); background:var(--warn-soft); border-width:3px; }
+.choice.best{ border-color:var(--ok); border-style:dashed; }
+.choice .tag{ display:block; font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ok); margin-bottom:3px; }
+.fb{ border-radius:12px; padding:13px 15px; font-size:16.5px; line-height:1.45; display:flex; flex-direction:column; gap:4px; }
+.fb b{ font-family:"Archivo",sans-serif; font-size:18px; }
+.fb.r-right,.fb.r-ok{ background:var(--ok-soft); }
+.fb.r-right b,.fb.r-ok b{ color:var(--ok); }
+.fb.r-notfirst{ background:var(--signal-soft); }
+.fb.r-notfirst b{ color:var(--signal); }
+.fb.r-not{ background:var(--warn-soft); }
+.fb.r-not b{ color:var(--warn); }
+.fb.r-never{ background:var(--warn-soft); border:2.5px solid var(--warn); }
+.fb.r-never b{ color:var(--warn); text-transform:uppercase; letter-spacing:.04em; }
+.recap li{ margin-bottom:8px; }
+.recap{ margin:0; padding-left:20px; font-size:15px; }
+.recap .best{ color:var(--muted); display:block; font-size:14px; }
+
+/* ============ my info ============ */
+.prow2{ display:grid; grid-template-columns:1fr auto; gap:6px; align-items:center; border-bottom:1px solid var(--hair); padding:8px 0; }
+.prow2:last-child{ border-bottom:0; }
+.pmain{ appearance:none; border:0; background:none; cursor:pointer; text-align:left; color:var(--ink); font:inherit; padding:4px 0; min-height:48px; }
+.pmain b{ font-family:"Archivo",sans-serif; font-size:16.5px; display:block; }
+.pmain .ph{ font-family:"IBM Plex Mono",monospace; font-size:14px; color:var(--muted); }
+.pmain .ph.missing{ color:var(--warn); font-family:"IBM Plex Sans",sans-serif; }
+.tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:4px; }
+.tagp{ font-size:11.5px; font-weight:600; border-radius:999px; padding:1px 8px; background:var(--route-soft); color:var(--route-ink); }
+.order{ display:flex; gap:4px; }
+.order button{ appearance:none; cursor:pointer; width:40px; height:40px; border-radius:9px; border:1.5px solid var(--hair); background:var(--surface-2); color:var(--ink); display:flex; align-items:center; justify-content:center; }
+.order button[disabled]{ opacity:.3; cursor:default; }
+.order svg{ width:18px; height:18px; }
+.prog{ height:10px; border-radius:5px; background:var(--surface-2); border:1px solid var(--hair); overflow:hidden; }
+.prog i{ display:block; height:100%; background:var(--route); border-radius:5px; }
+.hgroup h3{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:8px 0 2px; }
+.hrow{ appearance:none; cursor:pointer; width:100%; text-align:left; color:var(--ink); font:inherit; background:none; border:0; border-bottom:1px solid var(--hair); display:grid; grid-template-columns:46px 1fr auto; gap:11px; align-items:center; padding:8px 0; min-height:58px; }
+.thumb{ width:46px; height:46px; border-radius:9px; background:var(--surface-2); border:1px solid var(--hair); object-fit:cover; display:flex; align-items:center; justify-content:center; color:var(--muted); }
+.thumb svg{ width:22px; height:22px; }
+.hrow .ti{ font-weight:600; font-size:15px; line-height:1.3; }
+.hrow .mt{ font-size:12.5px; color:var(--muted); }
+.svc{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:6px 0; }
+.svc span{ font-size:15px; }
+.svc a{ font-family:"IBM Plex Mono",monospace; font-weight:600; color:var(--route-ink); }
+
+/* ============ dialogs ============ */
+dialog.sheet{
+  border:0; padding:0; margin:auto; width:min(520px, calc(100% - 24px)); max-height:calc(100% - 24px);
+  background:var(--surface); color:var(--ink); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
+.dbody{ padding:18px 18px 16px; display:flex; flex-direction:column; gap:14px; }
+.dtop{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.dcount{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.dbody h2{ font-size:21px; }
+.kinds{ display:flex; gap:6px; flex-wrap:wrap; }
+.kind{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:3px 9px; background:var(--route-soft); color:var(--route-ink); }
+.photobox{ background:var(--surface-2); border:1.5px dashed var(--hair); border-radius:12px; min-height:150px; display:flex; align-items:center; justify-content:center; overflow:hidden; color:var(--muted); font-size:14px; text-align:center; padding:0; }
+.photobox img{ width:100%; max-height:300px; object-fit:cover; display:block; }
+.gpic{ background:var(--surface-2); border:1px solid var(--hair); border-radius:12px; height:120px; display:flex; align-items:center; justify-content:center; color:var(--route-ink); }
+.gpic svg{ width:64px; height:64px; }
+.gtext{ font-size:15.5px; line-height:1.55; margin:0; }
+.gdots{ display:flex; gap:6px; justify-content:center; }
+.gdots i{ width:8px; height:8px; border-radius:50%; background:var(--hair); }
+.gdots i.on{ background:var(--signal-fill); width:20px; border-radius:4px; }
+.helplink{ align-self:flex-start; margin-top:4px; appearance:none; cursor:pointer; border:1.5px solid var(--hair); background:var(--surface); color:var(--route-ink); border-radius:999px; padding:6px 14px 6px 10px; min-height:38px; font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:7px; }
+.helplink svg{ width:18px; height:18px; }
+
+/* ============ breathing ============ */
+.breathe{
+  position:fixed; inset:0; z-index:30; background:var(--ground);
+  display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+  padding:calc(16px + env(safe-area-inset-top)) 20px calc(22px + env(safe-area-inset-bottom));
+}
+.breathe .top{ width:100%; max-width:560px; display:flex; justify-content:flex-end; }
+.breathe .mid{ display:flex; flex-direction:column; align-items:center; gap:26px; text-align:center; }
+.orb{ width:220px; height:220px; display:flex; align-items:center; justify-content:center; }
+.orb i{ display:block; width:100%; height:100%; border-radius:50%; background:var(--route-soft); border:3px solid var(--route); transform:scale(.55); }
+.breathe.go .orb i{ animation:breathe 8s ease-in-out 3 forwards; }
+@keyframes breathe{ 0%{ transform:scale(.55); } 50%{ transform:scale(1); } 100%{ transform:scale(.55); } }
+.bword{ font-family:"Archivo",sans-serif; font-weight:800; font-size:30px; margin:0; min-height:40px; }
+.bsub{ color:var(--muted); font-size:16px; margin:0; max-width:30ch; }
+.breathe .bottom{ width:100%; max-width:560px; }
+.breathe .bottom .btn{ width:100%; }
+
+/* ============ toast ============ */
+.toast{
+  position:fixed; left:50%; bottom:calc(14px + env(safe-area-inset-bottom)); transform:translate(-50%, 140%);
+  width:min(568px, calc(100% - 24px)); background:var(--ink); color:var(--ground); border-radius:12px; padding:12px 14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25); transition:transform .26s ease, visibility 0s linear .26s; z-index:40; visibility:hidden; font-size:14.5px;
+}
+.toast.show{ transform:translate(-50%, 0); visibility:visible; transition:transform .26s ease; }
+.foot{ color:var(--muted); font-size:12.5px; text-align:center; padding-top:6px; }
+
+@media (prefers-reduced-motion: reduce){
+  .toast{ transition:none; }
+  .breathe.go .orb i{ animation:breatheslow 8s ease-in-out 3 forwards; transform:scale(.8); }
+  @keyframes breatheslow{ 0%,100%{ opacity:.45; } 50%{ opacity:1; } }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================ MAIN ================================ -->
+<div class="wrap" id="main">
+
+  <header class="masthead">
+    <span class="eyebrow">Small problems &middot; steady steps</span>
+    <h1>Mishaps</h1>
+    <p class="dek">Something gone wrong? Pick what&rsquo;s happening and take it one step at a time.</p>
+    <button type="button" class="helplink" id="help-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><path d="M12 17.2h.01"/></svg>How it works</button>
+  </header>
+
+  <button type="button" class="calmbtn" id="calm-on"></button>
+  <div class="calmbar hide" id="calm-bar">
+    <span><b>Calm mode is on.</b> Take your time.</span>
+    <button type="button" class="btn" id="calm-off">Turn off</button>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-help" aria-selected="true" aria-controls="view-help">Help now</button>
+    <button class="tab" role="tab" id="tab-practice" aria-selected="false" aria-controls="view-practice">Practice</button>
+    <button class="tab" role="tab" id="tab-info" aria-selected="false" aria-controls="view-info">My info</button>
+  </nav>
+
+  <!-- ================= HELP NOW ================= -->
+  <div id="view-help" class="view" role="tabpanel" aria-labelledby="tab-help">
+    <div class="calls hide" id="calm-calls"></div>
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      <input type="text" id="q" placeholder="Search, like &ldquo;water&rdquo; or &ldquo;bus&rdquo;" autocomplete="off" aria-label="Search mishaps">
+    </label>
+    <div id="list"></div>
+  </div>
+
+  <!-- ================= PRACTICE ================= -->
+  <div id="view-practice" class="view hide" role="tabpanel" aria-labelledby="tab-practice">
+    <section class="card">
+      <div>
+        <h2>Practice while things are calm</h2>
+        <p class="sub">Each question asks what you&rsquo;d do. Pick an answer and see why it works, or what works better. The more familiar the steps feel now, the easier they are when it&rsquo;s real.</p>
+      </div>
+      <button type="button" class="btn big" id="p-next">Practice one</button>
+    </section>
+    <div id="plist"></div>
+    <section class="card">
+      <h2>Share how it&rsquo;s going</h2>
+      <p class="sub">Your practice stays on this phone. If you want to, send a short summary to someone you choose.</p>
+      <button type="button" class="btn ghost" id="p-share">Share my progress</button>
+    </section>
+  </div>
+
+  <!-- ================= MY INFO ================= -->
+  <div id="view-info" class="view hide" role="tabpanel" aria-labelledby="tab-info">
+    <section class="card">
+      <div>
+        <h2>My people</h2>
+        <p class="sub">The Call button shows these people in this order. Use the arrows to change the order.</p>
+      </div>
+      <div id="people"></div>
+      <button type="button" class="btn ghost" id="person-add">Add a person</button>
+    </section>
+
+    <section class="card">
+      <div>
+        <h2>My home</h2>
+        <p class="sub">Photos and notes for things like the water shutoff. They show up right inside the steps.</p>
+      </div>
+      <div class="prog" aria-hidden="true"><i id="home-bar"></i></div>
+      <p class="sub" id="home-count" style="margin:0"></p>
+      <button type="button" class="btn big" id="home-walk">Walk through my home</button>
+      <div id="home-list"></div>
+    </section>
+
+    <section class="card">
+      <h2>My places</h2>
+      <div class="field">
+        <span class="flabel">Home address</span>
+        <input type="text" id="addr" autocomplete="street-address" placeholder="Street, town">
+        <p class="note">Used for &ldquo;directions home&rdquo; and for Uber.</p>
+      </div>
+      <h2 style="margin-top:6px">Other numbers</h2>
+      <div id="services"></div>
+    </section>
+
+    <section class="card">
+      <h2>Keep a copy</h2>
+      <p class="sub">Everything here lives only on this phone. Save a copy now and then, so you can get it all back on a new phone.</p>
+      <button type="button" class="btn ghost" id="b-save">Save a copy</button>
+      <label class="btn ghost filebtn">Open a copy<input type="file" id="b-open" accept=".json,application/json"></label>
+      <div id="b-msg" class="hide"></div>
+    </section>
+  </div>
+
+  <p class="foot">Mishaps <span id="ver"></span>. Made at home.</p>
+</div>
+
+<!-- ================================ RUN A MISHAP ================================ -->
+<div class="wrap run hide" id="run">
+  <div class="runhead">
+    <button type="button" class="backlink" id="run-exit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>All mishaps</button>
+    <button type="button" class="calmchip" id="run-calm"></button>
+  </div>
+  <h1 class="runtitle" id="run-title"></h1>
+  <div id="run-body" class="view"></div>
+</div>
+
+<!-- ================================ PRACTICE ROUND ================================ -->
+<div class="wrap hide" id="quiz">
+  <div class="runhead">
+    <button type="button" class="backlink" id="quiz-exit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Practice</button>
+  </div>
+  <h1 class="runtitle" id="quiz-title"></h1>
+  <div id="quiz-body" class="view"></div>
+</div>
+
+<div class="callbar hide" id="callbar">
+  <div class="in">
+    <button type="button" class="btn" id="cb-call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.6 4.2-2.1 1.4a11 11 0 0 0 5.9 5.9l1.4-2.1 4.2 1.6v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z"/></svg>Call someone</button>
+    <a class="btn sosline" href="tel:911" id="cb-911">911</a>
+  </div>
+</div>
+
+<!-- call sheet -->
+<dialog class="sheet" id="callsheet" aria-labelledby="cs-title">
+  <div class="dbody">
+    <div class="dtop"><h2 id="cs-title">Who to call</h2><button type="button" class="lnk" data-close>Close</button></div>
+    <div class="calls" id="cs-list"></div>
+  </div>
+</dialog>
+
+<!-- person editor -->
+<dialog class="sheet" id="person" aria-labelledby="pe-title">
+  <div class="dbody">
+    <div class="dtop"><h2 id="pe-title">Person</h2><button type="button" class="lnk" data-close>Cancel</button></div>
+    <div class="field"><span class="flabel">Name</span><input type="text" id="pe-name" autocomplete="off"></div>
+    <div class="field"><span class="flabel">Phone number</span><input type="tel" id="pe-phone" autocomplete="off" inputmode="tel"></div>
+    <label class="check"><input type="checkbox" id="pe-coach"><span>Can talk me through things on the phone</span></label>
+    <label class="check"><input type="checkbox" id="pe-come"><span>Can come to help</span></label>
+    <div class="field"><span class="flabel">Note <span style="text-transform:none;letter-spacing:0;font-family:'IBM Plex Sans';font-weight:400">(optional)</span></span><input type="text" id="pe-note" placeholder="Like &ldquo;about 30 minutes away&rdquo;" autocomplete="off"></div>
+    <div class="btn-row">
+      <button type="button" class="btn ghost" id="pe-del">Remove</button>
+      <button type="button" class="btn" id="pe-save">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- home item editor -->
+<dialog class="sheet" id="item" aria-labelledby="it-title">
+  <div class="dbody">
+    <div class="dtop"><span class="dcount" id="it-count"></span><button type="button" class="lnk" data-close id="it-close">Close</button></div>
+    <h2 id="it-title"></h2>
+    <div class="kinds" id="it-kinds"></div>
+    <p class="gtext" id="it-how"></p>
+    <div id="it-photo-wrap" class="stack">
+      <div class="photobox" id="it-photo">No photo yet</div>
+      <div class="btn-row">
+        <label class="btn ghost filebtn" id="it-take"><span id="it-take-label">Take or choose a photo</span><input type="file" id="it-file" accept="image/*"></label>
+        <button type="button" class="btn ghost hide" id="it-rmphoto">Remove photo</button>
+      </div>
+    </div>
+    <label class="check hide" id="it-tried-wrap"><input type="checkbox" id="it-tried"><span>I&rsquo;ve tried it</span></label>
+    <label class="check hide" id="it-known-wrap"><input type="checkbox" id="it-known"><span>I know where it is</span></label>
+    <div class="field"><span class="flabel">Note</span><textarea id="it-note" placeholder="Like &ldquo;behind the trash can&rdquo;"></textarea></div>
+    <div class="btn-row" id="it-nav">
+      <button type="button" class="btn ghost" id="it-back">Back</button>
+      <button type="button" class="btn" id="it-next">Next</button>
+    </div>
+    <button type="button" class="btn" id="it-done">Done</button>
+  </div>
+</dialog>
+
+<!-- how it works -->
+<dialog class="sheet" id="guide" aria-labelledby="g-title">
+  <div class="dbody">
+    <div class="dtop"><span class="dcount" id="g-count"></span><button type="button" class="lnk" data-close>Close</button></div>
+    <div class="gpic" id="g-pic" aria-hidden="true"></div>
+    <h2 id="g-title"></h2>
+    <p class="gtext" id="g-text"></p>
+    <div class="gdots" id="g-dots" aria-hidden="true"></div>
+    <div class="btn-row">
+      <button type="button" class="btn ghost" id="g-back">Back</button>
+      <button type="button" class="btn" id="g-next" autofocus>Next</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- breathing -->
+<div class="breathe hide" id="breathe" role="dialog" aria-modal="true" aria-labelledby="b-word">
+  <div class="top"><button type="button" class="btn ghost" id="b-skip">Skip</button></div>
+  <div class="mid">
+    <div class="orb" aria-hidden="true"><i></i></div>
+    <p class="bword" id="b-word">Breathe in</p>
+    <p class="bsub" id="b-sub">Three slow breaths. Then one step at a time.</p>
+  </div>
+  <div class="bottom"><button type="button" class="btn big" id="b-go">I&rsquo;m ready</button></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="scenarios.js"></script>
+<script>
+(function(){
+  "use strict";
+  var VERSION = "v1";
+
+  /* ================= icons ================= */
+  var ICON = {
+    alarm:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.2"/><path d="M4.2 5.2A10 10 0 0 0 2.5 9M19.8 5.2A10 10 0 0 1 21.5 9"/>',
+    flame:'<path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.8 3.2-5.6 3.5-9.5 2.4 1.4 3.7 3.4 4 5.4.9-.9 1.4-2 1.5-3.2 2.3 1.8 4 4.2 4 7.3 0 3.4-2.5 6-6.5 6z"/><path d="M12 21c-1.7 0-2.8-1.1-2.8-2.6 0-1.7 1.4-2.5 2.8-4.2 1.4 1.7 2.8 2.5 2.8 4.2 0 1.5-1.1 2.6-2.8 2.6z"/>',
+    drop:'<path d="M12 3.5c3.4 4.2 6 7.3 6 10.6a6 6 0 0 1-12 0c0-3.3 2.6-6.4 6-10.6z"/><path d="M9.2 14.5a3 3 0 0 0 2.6 2.7"/>',
+    toilet:'<path d="M6 3.5h6v6H6z"/><path d="M4 9.5h14a0 0 0 0 1 0 0 6 6 0 0 1-6 6H10a6 6 0 0 1-6-6z"/><path d="M8.5 15.2 7.5 20.5h7l-1-5.3"/>',
+    bolt:'<path d="M13.2 2.8 5.5 13.2h6l-1 8 7.8-10.4h-6z"/>',
+    key:'<circle cx="8" cy="15" r="4.2"/><path d="m11 12 8.5-8.5M16.5 6.5l2.5 2.5M14.5 8.5l2 2"/>',
+    bus:'<rect x="5" y="3.5" width="14" height="14" rx="2.5"/><path d="M5 11h14M8 20.5v-3M16 20.5v-3"/><circle cx="8.5" cy="14.3" r=".9" fill="currentColor"/><circle cx="15.5" cy="14.3" r=".9" fill="currentColor"/>',
+    pin:'<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>',
+    card:'<rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M3 10h18M7 15h4"/>',
+    chat:'<path d="M4 5.5h16v10H10l-4.5 3.5v-3.5H4z"/><path d="M12 8.2v3M12 13.3h.01"/>',
+    air:'<path d="M3.5 9h11a2.5 2.5 0 1 0-2.5-2.5M3.5 13h15a2.5 2.5 0 1 1-2.5 2.5M3.5 17h7"/>',
+    gas:'<path d="M7 20c-1.6-1.6 1.6-3.2 0-4.8s1.6-3.2 0-4.8 1.6-3.2 0-4.8"/><path d="M12 20c-1.6-1.6 1.6-3.2 0-4.8s1.6-3.2 0-4.8 1.6-3.2 0-4.8"/><path d="M17 20c-1.6-1.6 1.6-3.2 0-4.8s1.6-3.2 0-4.8 1.6-3.2 0-4.8"/>',
+    car:'<path d="M4 16.5v-4.3L6 7.4A2 2 0 0 1 7.9 6h8.2a2 2 0 0 1 1.9 1.4l2 4.8v4.3z"/><path d="M4 12.2h16"/><circle cx="7.6" cy="16.6" r="1.9"/><circle cx="16.4" cy="16.6" r="1.9"/>',
+    plate:'<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 12h2M11 12h2M15 12h2"/>',
+    breath:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/>',
+    phone:'<path d="M6.5 3.5h3l1.6 4.2-2.1 1.4a11 11 0 0 0 5.9 5.9l1.4-2.1 4.2 1.6v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z"/>',
+    camera:'<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>',
+    check:'<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7 5.3-5.6"/>',
+    eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>',
+    hand:'<path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10.5V6a1.5 1.5 0 0 1 3 0v8a6.5 6.5 0 0 1-6.5 6.5A6 6 0 0 1 5.6 18l-2.3-4a1.5 1.5 0 0 1 2.5-1.6L8 15V11"/>',
+    home:'<path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-5h4v5"/>',
+    book:'<path d="M12 6.6C10 5 7 4.6 3.8 5.1v13.2c3.2-.5 6.2 0 8.2 1.4 2-1.4 5-1.9 8.2-1.4V5.1C17 4.6 14 5 12 6.6z"/><path d="M12 6.6v13.1"/>'
+  };
+  function svg(id, w){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (w || 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON[id] || ICON.chat) + '</svg>';
+  }
+  var CHEV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>';
+  var UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>';
+  var DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+
+  /* ================= helpers ================= */
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]; }); }
+  function store(k, v){
+    try { if (v === undefined) return window.localStorage.getItem(k); window.localStorage.setItem(k, v); }
+    catch(e){ return null; }
+  }
+  function load(k, fallback){ try { var v = JSON.parse(store(k)); return v == null ? fallback : v; } catch(e){ return fallback; } }
+  function save(k, v){ store(k, JSON.stringify(v)); }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function digits(p){ return String(p || "").replace(/[^\d+]/g, ""); }
+  function today(){ var d = new Date(); return d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0"+d.getDate()).slice(-2); }
+  var toastT;
+  function toast(t){ var el = $("toast"); el.textContent = t; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function(){ el.classList.remove("show"); }, 2600); }
+  function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function byId(list, id){ for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+
+  var SC = {}; SCENARIOS.forEach(function(s){ SC[s.id] = s; });
+  var ITEM = {}; HOME_ITEMS.forEach(function(h){ ITEM[h.id] = h; });
+
+  /* ================= state ================= */
+  /* people: [{id, name, phone, coach, come, note}] - the order is the call order. */
+  var people = load("mh_people", null);
+  if (!Array.isArray(people)){
+    people = [
+      { id:uid(), name:"Mom", phone:"", coach:true, come:true, note:"" },
+      { id:uid(), name:"Dad", phone:"", coach:true, come:true, note:"" },
+      { id:uid(), name:"Aunt", phone:"", coach:true, come:true, note:"About 30 minutes away" }
+    ];
+    save("mh_people", people);
+  }
+  var homeInfo = load("mh_home", {});      /* {itemId: {note, tried, known, photo:true}} */
+  var place = load("mh_place", { address:"" });
+  var practice = load("mh_practice", {});  /* {scenarioId: {rounds, last, missed:[qIndex]}} */
+  var calm = !!load("mh_calm", false);
+
+  function savePeople(){ save("mh_people", people); }
+  function saveHome(){ save("mh_home", homeInfo); }
+  function callable(){ return people.filter(function(p){ return digits(p.phone); }); }
+
+  /* ================= photos (IndexedDB) =================
+     localStorage only holds about 5 MB of text, which a few photos would fill.
+     IndexedDB is the browser's on-device database; it stores the photos as files
+     (Blobs) and has much more room. Like localStorage, it stays on this phone. */
+  var dbp = null;
+  function db(){
+    if (dbp) return dbp;
+    dbp = new Promise(function(res, rej){
+      if (!window.indexedDB){ rej(new Error("no indexedDB")); return; }
+      var r = indexedDB.open("mishaps", 1);
+      r.onupgradeneeded = function(){ r.result.createObjectStore("photos"); };
+      r.onsuccess = function(){ res(r.result); };
+      r.onerror = function(){ rej(r.error); };
+    });
+    return dbp;
+  }
+  function tx(mode, fn){
+    return db().then(function(d){
+      return new Promise(function(res, rej){
+        var t = d.transaction("photos", mode), st = t.objectStore("photos"), out;
+        var r = fn(st); if (r) r.onsuccess = function(){ out = r.result; };
+        t.oncomplete = function(){ res(out); };
+        t.onerror = function(){ rej(t.error); };
+      });
+    });
+  }
+  function putPhoto(id, blob){ return tx("readwrite", function(s){ return s.put(blob, id); }); }
+  function getPhoto(id){ return tx("readonly", function(s){ return s.get(id); }); }
+  function delPhoto(id){ return tx("readwrite", function(s){ return s.delete(id); }); }
+  function clearPhotos(){ return tx("readwrite", function(s){ return s.clear(); }); }
+  var urlCache = {};
+  function photoURL(id){
+    if (urlCache[id]) return Promise.resolve(urlCache[id]);
+    return getPhoto(id).then(function(b){ if (!b) return null; urlCache[id] = URL.createObjectURL(b); return urlCache[id]; });
+  }
+  function forgetURL(id){ if (urlCache[id]){ URL.revokeObjectURL(urlCache[id]); delete urlCache[id]; } }
+  /* Fill every <img data-photo="itemId"> on screen once its photo has loaded. */
+  function fillPhotos(root){
+    Array.prototype.forEach.call((root || document).querySelectorAll("img[data-photo]"), function(img){
+      photoURL(img.getAttribute("data-photo")).then(function(u){ if (u) img.src = u; }).catch(function(){});
+    });
+  }
+  /* Phone photos are large (often 3-5 MB). Redraw them at 1200px on a canvas and
+     save as JPEG, which keeps them sharp enough to spot a valve but about 200 KB each. */
+  function shrink(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function(){
+        var s = Math.min(1, 1200 / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement("canvas");
+        c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function(b){ b ? res(b) : rej(new Error("toBlob")); }, "image/jpeg", 0.82);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("image")); };
+      img.src = url;
+    });
+  }
+
+  /* ================= views ================= */
+  var TABS = ["help", "practice", "info"];
+  function showTab(v){
+    TABS.forEach(function(n){
+      $("tab-" + n).setAttribute("aria-selected", n === v ? "true" : "false");
+      $("view-" + n).classList.toggle("hide", n !== v);
+    });
+    if (v === "practice") drawPractice();
+    if (v === "info") drawInfo();
+    store("mh_tab", v);
+  }
+  TABS.forEach(function(n){ $("tab-" + n).addEventListener("click", function(){ showTab(n); }); });
+  function screen(which){
+    ["main", "run", "quiz"].forEach(function(n){ $(n).classList.toggle("hide", n !== which); });
+    $("callbar").classList.toggle("hide", which !== "run");
+    window.scrollTo(0, 0);
+  }
+
+  /* ================= calm mode ================= */
+  function drawCalm(){
+    document.body.classList.toggle("calm", calm);
+    $("calm-on").classList.toggle("hide", calm);
+    $("calm-bar").classList.toggle("hide", !calm);
+    $("calm-on").innerHTML = svg("breath", 2) + '<span>I&rsquo;m really anxious<small>Slows things down and talks you through it</small></span>';
+    $("run-calm").textContent = calm ? "Calm mode on" : "I’m really anxious";
+    var cc = $("calm-calls");
+    cc.classList.toggle("hide", !calm);
+    if (calm){
+      var coach = callable().filter(function(p){ return p.coach; });
+      var who = coach.length ? coach : callable();
+      cc.innerHTML = who.length
+        ? '<p class="sub" style="margin:0 2px">Talking to someone you know can help. Or pick what&rsquo;s happening below.</p>' + who.map(function(p){ return '<a class="btn big" href="tel:' + esc(digits(p.phone)) + '">' + svg("phone", 2) + 'Call ' + esc(p.name) + '</a>'; }).join("")
+        : '<p class="sub" style="margin:0 2px">Pick what&rsquo;s happening below.</p>';
+    }
+  }
+  var bTimer = null;
+  function startBreathing(after){
+    var el = $("breathe"), word = $("b-word"), n = 0;
+    el.classList.remove("hide", "go"); void el.offsetWidth; el.classList.add("go");
+    word.textContent = "Breathe in"; $("b-sub").textContent = "Three slow breaths. Then one step at a time.";
+    clearInterval(bTimer);
+    bTimer = setInterval(function(){
+      n++;
+      if (n >= 6){ clearInterval(bTimer); word.textContent = "Ready when you are"; $("b-sub").textContent = "You can come back to this any time."; return; }
+      word.textContent = n % 2 ? "Breathe out" : "Breathe in";
+    }, 4000);
+    breatheAfter = after;
+    $("b-go").focus();
+  }
+  var breatheAfter = null;
+  function endBreathing(){
+    clearInterval(bTimer); $("breathe").classList.add("hide");
+    var f = breatheAfter; breatheAfter = null; if (f) f();
+  }
+  $("b-skip").addEventListener("click", endBreathing);
+  $("b-go").addEventListener("click", endBreathing);
+  function turnCalmOn(){
+    calm = true; save("mh_calm", true); drawCalm();
+    startBreathing(null);
+  }
+  function turnCalmOff(){ calm = false; save("mh_calm", false); drawCalm(); }
+  $("calm-on").addEventListener("click", turnCalmOn);
+  $("calm-off").addEventListener("click", turnCalmOff);
+  $("run-calm").addEventListener("click", function(){ if (calm) turnCalmOff(); else turnCalmOn(); });
+
+  /* ================= mishap list ================= */
+  var GROUPS = [
+    { id:"home",  title:"At home",        order:["smoke-alarm","stove","co-alarm","gas","overflow","toilet","power","locked-out"] },
+    { id:"out",   title:"Out and about",  order:["lost","transit","uber-noshow","uber-match"] },
+    { id:"money", title:"Money and messages", order:["card","scam"] }
+  ];
+  function matches(s, q){
+    if (!q) return true;
+    var hay = (s.title + " " + s.keywords.join(" ")).toLowerCase();
+    return q.toLowerCase().split(/\s+/).filter(Boolean).every(function(w){ return hay.indexOf(w) >= 0; });
+  }
+  function rowHTML(s, extra){
+    return '<button type="button" class="mrow" data-run="' + s.id + '"><span class="ibox">' + svg(s.icon) + '</span><span class="ti">' + esc(s.title) + (extra || "") + '</span><span class="chev">' + CHEV + '</span></button>';
+  }
+  function drawList(){
+    var q = $("q").value.trim(), html = "", any = false;
+    GROUPS.forEach(function(g){
+      var rows = g.order.map(function(id){ return SC[id]; }).filter(function(s){ return s && matches(s, q); });
+      if (!rows.length) return;
+      any = true;
+      html += '<section class="group"><h2>' + g.title + '</h2>' + rows.map(function(s){ return rowHTML(s); }).join("") + '</section>';
+    });
+    $("list").innerHTML = any ? html : '<p class="empty">Nothing matches &ldquo;' + esc(q) + '&rdquo;. Try another word, like water, alarm or bus.</p>';
+  }
+  $("q").addEventListener("input", drawList);
+  document.addEventListener("click", function(e){
+    var b = e.target.closest("[data-run]");
+    if (b) openRun(b.getAttribute("data-run"));
+  });
+
+  /* ================= running a mishap ================= */
+  var cur = null, node = null, hist = [];
+  function openRun(id){
+    cur = SC[id]; if (!cur) return;
+    hist = []; node = cur.start;
+    $("run-title").textContent = cur.title;
+    screen("run"); drawNode();
+  }
+  function goto(next){ hist.push(node); node = next; drawNode(); window.scrollTo(0, 0); }
+  function back(){ if (hist.length){ node = hist.pop(); drawNode(); window.scrollTo(0, 0); } }
+  $("run-exit").addEventListener("click", function(){ screen("main"); });
+
+  function homeHTML(keys){
+    return [].concat(keys || []).map(function(k){
+      var it = ITEM[k], info = homeInfo[k] || {};
+      if (!it) return "";
+      if (info.photo || info.note){
+        return '<div class="homepic">' + (info.photo ? '<img data-photo="' + k + '" alt="Your photo: ' + esc(it.title) + '">' : "") +
+          '<b>' + esc(it.title) + '</b>' + (info.note ? '<p>' + esc(info.note) + '</p>' : "") + '</div>';
+      }
+      return '<p class="homehint">Tip: add a photo of your ' + esc(it.title.toLowerCase()) + ' in My info, and it will show here.</p>';
+    }).join("");
+  }
+
+  /* Call buttons. Phone links (tel:) open the iPhone's dialer; text links (sms:) open
+     Messages with the words already typed in. */
+  var SAY = {
+    call:  function(n){ return "Call " + n; },
+    coach: function(n){ return "Talk it through with " + n; },
+    come:  function(n){ return "Ask " + n + " to come"; }
+  };
+  function personBtns(p, kind){
+    var d = esc(digits(p.phone));
+    return '<div class="callrow"><a class="btn" href="tel:' + d + '">' + svg("phone", 2) + esc(SAY[kind](p.name)) + '</a>' +
+      '<a class="btn ghost" href="sms:' + d + '">Text</a></div>' + (p.note ? '<p class="callnote">' + esc(p.note) + '</p>' : "");
+  }
+  function callsHTML(list){
+    if (!list || !list.length) return "";
+    var shown = {}, out = [], noPeople = false;
+    function addPeople(filter, label){
+      var ppl = callable().filter(filter || function(){ return true; }).filter(function(p){ return !shown[p.id]; });
+      if (!callable().length){ noPeople = true; return; }
+      if (!ppl.length && filter){ return addPeople(null, "call"); }
+      ppl.forEach(function(p){ shown[p.id] = 1; out.push(personBtns(p, label)); });
+    }
+    list.forEach(function(c){
+      if (c === "911") out.push('<a class="btn big sos" href="tel:911">' + svg("phone", 2) + 'Call 911</a>');
+      else if (c === "people") addPeople(null, "call");
+      else if (c === "coach") addPeople(function(p){ return p.coach; }, "coach");
+      else if (c === "come") addPeople(function(p){ return p.come; }, "come");
+      else if (c === "novec" || c === "gas"){
+        var sv = byId(SERVICES, c);
+        out.push('<a class="btn ghost" href="tel:' + digits(sv.phone) + '">' + svg("phone", 2) + 'Call ' + esc(sv.name) + '</a>');
+      }
+      else if (c === "uber"){
+        var u = "https://m.uber.com/ul/?action=setPickup&pickup=my_location" + (place.address ? "&dropoff[formatted_address]=" + encodeURIComponent(place.address) : "");
+        out.push('<a class="btn ghost" href="' + esc(u) + '">' + svg("car", 2) + 'Open Uber</a>');
+      }
+      else if (c === "whereami") out.push('<button type="button" class="btn" data-loc="show">' + svg("pin", 2) + 'Show where I am</button><div class="locbox hide" data-locout></div>');
+      else if (c === "sendloc") out.push('<button type="button" class="btn" data-loc="send">' + svg("pin", 2) + 'Send my location</button><div class="locbox hide" data-locout></div>');
+      else if (c === "directions"){
+        if (place.address){
+          var a = encodeURIComponent(place.address);
+          out.push('<div class="btn-row"><a class="btn" href="https://maps.apple.com/?daddr=' + a + '&dirflg=w">Walking</a><a class="btn" href="https://maps.apple.com/?daddr=' + a + '&dirflg=r">Transit</a></div>');
+        } else {
+          out.push('<a class="btn" href="https://maps.apple.com/">' + svg("pin", 2) + 'Open Maps</a><p class="homehint">Add your home address in My info, and this opens directions home in one tap.</p>');
+        }
+      }
+    });
+    if (noPeople) out.push('<p class="note spot">Add phone numbers in <b>My info</b>, and call buttons for your people show up here.</p>');
+    return out.length ? '<div class="calls">' + out.join("") + '</div>' : "";
+  }
+
+  /* Location: the browser asks her permission the first time. It only works on a
+     secure (https) page, which GitHub Pages is. */
+  var lastPos = null;
+  function getPos(){
+    return new Promise(function(res, rej){
+      if (!navigator.geolocation){ rej(new Error("none")); return; }
+      navigator.geolocation.getCurrentPosition(function(p){ lastPos = p; res(p); }, rej, { enableHighAccuracy:true, timeout:15000, maximumAge:60000 });
+    });
+  }
+  function mapLink(p){ var c = p.coords.latitude.toFixed(5) + "," + p.coords.longitude.toFixed(5); return "https://maps.apple.com/?ll=" + c + "&q=" + encodeURIComponent("I'm here"); }
+  document.addEventListener("click", function(e){
+    var b = e.target.closest("[data-loc]"); if (!b) return;
+    var out = b.nextElementSibling, mode = b.getAttribute("data-loc");
+    out.classList.remove("hide"); out.innerHTML = "Finding where you are…";
+    getPos().then(function(p){
+      var link = mapLink(p);
+      if (mode === "show"){
+        out.innerHTML = '<span>Found you, within about ' + Math.round(p.coords.accuracy) + ' meters.</span><a class="btn ghost" href="' + esc(link) + '">See it on a map</a>';
+      } else {
+        var body = encodeURIComponent("I'm here: " + link);
+        var ppl = callable();
+        out.innerHTML = ppl.length
+          ? ppl.map(function(x){ return '<a class="btn ghost" href="sms:' + esc(digits(x.phone)) + '&body=' + body + '">Text my location to ' + esc(x.name) + '</a>'; }).join("")
+          : '<a class="btn ghost" href="sms:&body=' + body + '">Text my location</a>';
+      }
+    }).catch(function(){
+      out.innerHTML = mode === "show"
+        ? "Couldn't find your location. Open the Maps app; the blue dot is you."
+        : "Couldn't get your location here. In Messages, open the chat, tap <b>+</b>, then <b>Location</b>, and send it.";
+    });
+  });
+
+  function drawNode(){
+    var n = cur.nodes[node], h = "";
+    var count = n.t === "end" ? "Last step" : n.t === "ask" ? "Question" : "Step " + (hist.filter(function(k){ return cur.nodes[k].t === "step"; }).length + 1);
+    if (n.danger) count = "Safety first";
+    h += '<section class="card stepcard' + (n.danger ? " danger" : "") + '"><span class="count">' + count + '</span>';
+    h += '<h2 class="steptext">' + esc(n.text) + '</h2>';
+    if (n.more) h += '<ul class="more">' + n.more.map(function(m){ return "<li>" + esc(m) + "</li>"; }).join("") + '</ul>';
+    if (n.calm) h += '<div class="calmline">' + esc(n.calm) + '</div>';
+    h += homeHTML(n.home);
+    h += callsHTML(n.call);
+    if (n.why) h += '<details class="why"><summary>Why?</summary><p>' + esc(n.why) + '</p></details>';
+    h += '</section>';
+    if (n.t === "step"){
+      h += '<button type="button" class="btn big" id="r-next">Done. Next step</button>';
+    } else if (n.t === "ask"){
+      h += '<div class="opts">' + n.opts.map(function(o, i){ return '<button type="button" class="opt" data-opt="' + i + '"><span>' + esc(o.label) + '</span>' + CHEV + '</button>'; }).join("") + '</div>';
+    } else {
+      h += '<div class="donebanner">' + svg("check", 2) + 'That’s the last step. You handled it.</div>';
+      h += '<div class="btn-row"><button type="button" class="btn" id="r-home">All mishaps</button><button type="button" class="btn ghost" id="r-prac">Practice this one</button></div>';
+    }
+    if (hist.length) h += '<button type="button" class="lnk" id="r-back">Go back a step</button>';
+    var body = $("run-body"); body.innerHTML = h;
+    fillPhotos(body);
+    if ($("r-next")) $("r-next").addEventListener("click", function(){ goto(n.next); });
+    Array.prototype.forEach.call(body.querySelectorAll("[data-opt]"), function(b){
+      b.addEventListener("click", function(){ goto(n.opts[+b.getAttribute("data-opt")].next); });
+    });
+    if ($("r-back")) $("r-back").addEventListener("click", back);
+    if ($("r-home")) $("r-home").addEventListener("click", function(){ screen("main"); });
+    if ($("r-prac")) $("r-prac").addEventListener("click", function(){ startQuiz(cur.id); });
+  }
+
+  /* ================= call sheet ================= */
+  function openCallSheet(){
+    var ppl = callable(), h = "";
+    if (calm){ ppl = ppl.filter(function(p){ return p.coach; }).concat(ppl.filter(function(p){ return !p.coach; })); }
+    h += ppl.length ? ppl.map(function(p){ return personBtns(p, "call"); }).join("") : '<p class="note spot">No numbers yet. Add them in <b>My info</b>.</p>';
+    h += SERVICES.map(function(s){ return '<a class="btn ghost" href="tel:' + digits(s.phone) + '">Call ' + esc(s.name) + '</a>'; }).join("");
+    h += '<a class="btn sos" href="tel:911">' + svg("phone", 2) + 'Call 911</a>';
+    $("cs-list").innerHTML = h;
+    $("callsheet").showModal();
+  }
+  $("cb-call").addEventListener("click", openCallSheet);
+  /* <dialog> + showModal() is the browser's built-in pop-up: it dims the page,
+     keeps focus inside, and closes with Escape. Any [data-close] button closes its dialog. */
+  document.addEventListener("click", function(e){
+    var c = e.target.closest("[data-close]"); if (c){ var d = c.closest("dialog"); if (d) d.close(); }
+  });
+
+  /* ================= practice ================= */
+  function status(id){
+    var p = practice[id];
+    if (!p || !p.rounds) return { cls:"none", text:"Not tried" };
+    if (!p.missed || !p.missed.length) return { cls:"clean", text:"All right" };
+    return { cls:"tried", text:p.missed.length + " to review" };
+  }
+  function drawPractice(){
+    var html = "";
+    GROUPS.forEach(function(g){
+      html += '<section class="group"><h2>' + g.title + '</h2>' + g.order.map(function(id){
+        var s = SC[id], st = status(id);
+        return '<button type="button" class="mrow prow" data-quiz="' + id + '"><span class="ibox">' + svg(s.icon) + '</span><span class="ti">' + esc(s.title) +
+          '<span class="mt">' + s.practice.length + (s.practice.length === 1 ? " question" : " questions") + '</span></span><span class="badge ' + st.cls + '">' + st.text + '</span></button>';
+      }).join("") + '</section>';
+    });
+    $("plist").innerHTML = html;
+    $("p-next").textContent = pickNext().why;
+  }
+  function pickNext(){
+    var all = SCENARIOS.map(function(s){ return s.id; });
+    var missed = all.filter(function(id){ return practice[id] && practice[id].missed && practice[id].missed.length; });
+    if (missed.length) return { id:missed[0], why:"Practice one you missed" };
+    var fresh = all.filter(function(id){ return !practice[id] || !practice[id].rounds; });
+    if (fresh.length) return { id:fresh[Math.floor(Math.random() * fresh.length)], why:"Practice a new one" };
+    return { id:all[Math.floor(Math.random() * all.length)], why:"Practice one at random" };
+  }
+  $("p-next").addEventListener("click", function(){ startQuiz(pickNext().id); });
+  document.addEventListener("click", function(e){ var b = e.target.closest("[data-quiz]"); if (b) startQuiz(b.getAttribute("data-quiz")); });
+
+  var qs = null; /* {id, i, results:[{qi, r, first}], order:[...]} */
+  function startQuiz(id){
+    var s = SC[id];
+    qs = { id:id, i:0, results:[], choices:s.practice.map(function(p){ return shuffle(p.choices); }) };
+    $("quiz-title").textContent = s.title;
+    screen("quiz"); drawQ();
+  }
+  var FB = { right:"Right answer.", ok:"Good thinking.", notfirst:"Good idea, just not first.", not:"Not this one.", never:"Never do this." };
+  function drawQ(){
+    var s = SC[qs.id], p = s.practice[qs.i], ch = qs.choices[qs.i];
+    var h = '<section class="card"><span class="flabel">Question ' + (qs.i + 1) + ' of ' + s.practice.length + '</span><p class="qtext">' + esc(p.q) + '</p>' +
+      '<div class="stack">' + ch.map(function(c, i){ return '<button type="button" class="choice" data-ch="' + i + '">' + esc(c.text) + '</button>'; }).join("") + '</div>' +
+      '<div id="q-fb"></div></section>';
+    $("quiz-body").innerHTML = h;
+    Array.prototype.forEach.call($("quiz-body").querySelectorAll("[data-ch]"), function(b){
+      b.addEventListener("click", function(){ answer(+b.getAttribute("data-ch")); });
+    });
+  }
+  function answer(ci){
+    var s = SC[qs.id], p = s.practice[qs.i], ch = qs.choices[qs.i], c = ch[ci];
+    var good = c.r === "right" || c.r === "ok";
+    qs.results.push({ qi:qs.i, good:good });
+    var btns = $("quiz-body").querySelectorAll("[data-ch]");
+    Array.prototype.forEach.call(btns, function(b, i){
+      b.disabled = true;
+      if (i === ci) b.classList.add("picked", "r-" + c.r);
+      else if (!good && ch[i].r === "right"){ b.classList.add("best"); b.innerHTML = '<span class="tag">Best answer</span>' + esc(ch[i].text); }
+    });
+    var last = qs.i === s.practice.length - 1;
+    $("q-fb").innerHTML = '<div class="fb r-' + c.r + '" role="status"><b>' + FB[c.r] + '</b><span>' + esc(c.r === "right" ? c.fb.replace(/^Yes\.\s*/, "") : c.fb) + '</span></div>' +
+      '<button type="button" class="btn big" id="q-next" style="width:100%;margin-top:12px">' + (last ? "See how you did" : "Next question") + '</button>';
+    $("q-next").addEventListener("click", function(){ if (last) recap(); else { qs.i++; drawQ(); window.scrollTo(0, 0); } });
+    $("q-next").focus({ preventScroll:true });
+    $("q-fb").scrollIntoView({ behavior:"smooth", block:"nearest" });
+  }
+  function recap(){
+    var s = SC[qs.id];
+    var right = qs.results.filter(function(r){ return r.good; }), miss = qs.results.filter(function(r){ return !r.good; });
+    var rec = practice[qs.id] || { rounds:0 };
+    rec.rounds = (rec.rounds || 0) + 1; rec.last = today(); rec.missed = miss.map(function(r){ return r.qi; });
+    practice[qs.id] = rec; save("mh_practice", practice);
+    function best(qi){ var c = s.practice[qi].choices.filter(function(x){ return x.r === "right"; })[0]; return c ? c.text : ""; }
+    var h = '<section class="card"><span class="flabel">How you did</span>';
+    if (!miss.length) h += '<div class="donebanner">' + svg("check", 2) + (right.length === 1 ? "You got it right." : "All " + right.length + " right.") + '</div>';
+    if (right.length && miss.length) h += '<h2>You got these right</h2><ul class="recap">' + right.map(function(r){ return "<li>" + esc(s.practice[r.qi].q) + "</li>"; }).join("") + "</ul>";
+    if (miss.length) h += '<h2>Worth another look</h2><ul class="recap">' + miss.map(function(r){ return "<li>" + esc(s.practice[r.qi].q) + '<span class="best">Best answer: ' + esc(best(r.qi)) + "</span></li>"; }).join("") + "</ul>";
+    h += '</section><div class="stack">';
+    if (miss.length) h += '<button type="button" class="btn big" id="rc-again">Try it again</button>';
+    h += '<button type="button" class="btn' + (miss.length ? " ghost" : " big") + '" id="rc-walk">Walk through the steps</button>' +
+      '<button type="button" class="btn ghost" id="rc-back">Back to practice</button></div>';
+    $("quiz-body").innerHTML = h; window.scrollTo(0, 0);
+    if ($("rc-again")) $("rc-again").addEventListener("click", function(){ startQuiz(qs.id); });
+    $("rc-walk").addEventListener("click", function(){ openRun(qs.id); });
+    $("rc-back").addEventListener("click", function(){ screen("main"); showTab("practice"); });
+  }
+  $("quiz-exit").addEventListener("click", function(){ screen("main"); showTab("practice"); });
+
+  /* Share a short summary. navigator.share opens the iPhone's Share sheet
+     (Messages, Mail, ...). Where that isn't available, it falls back to Messages. */
+  $("p-share").addEventListener("click", function(){
+    var good = [], review = [], fresh = 0;
+    SCENARIOS.forEach(function(s){
+      var st = status(s.id);
+      if (st.cls === "clean") good.push(s.title); else if (st.cls === "tried") review.push(s.title); else fresh++;
+    });
+    var text = "My Mishaps practice, " + today() + "\n" +
+      (good.length ? "All right last time: " + good.join(", ") + "\n" : "") +
+      (review.length ? "Still practicing: " + review.join(", ") + "\n" : "") +
+      (fresh ? "Not tried yet: " + fresh + "\n" : "");
+    if (navigator.share){
+      navigator.share({ title:"My Mishaps practice", text:text }).catch(function(){});
+    } else {
+      location.href = "sms:&body=" + encodeURIComponent(text);
+    }
+  });
+
+  /* ================= my info: people ================= */
+  function drawPeople(){
+    $("people").innerHTML = people.length ? people.map(function(p, i){
+      var tags = (p.coach ? '<span class="tagp">Can talk me through it</span>' : "") + (p.come ? '<span class="tagp">Can come</span>' : "");
+      return '<div class="prow2"><button type="button" class="pmain" data-person="' + p.id + '"><b>' + (i + 1) + '. ' + esc(p.name || "No name") + '</b>' +
+        '<span class="ph' + (digits(p.phone) ? "" : " missing") + '">' + (digits(p.phone) ? esc(p.phone) : "Add a phone number") + '</span>' +
+        (tags ? '<span class="tags">' + tags + '</span>' : "") + '</button>' +
+        '<span class="order"><button type="button" aria-label="Move ' + esc(p.name) + ' up" data-up="' + i + '"' + (i === 0 ? " disabled" : "") + '>' + UP + '</button>' +
+        '<button type="button" aria-label="Move ' + esc(p.name) + ' down" data-down="' + i + '"' + (i === people.length - 1 ? " disabled" : "") + '>' + DOWN + '</button></span></div>';
+    }).join("") : '<p class="empty">No one yet.</p>';
+  }
+  $("people").addEventListener("click", function(e){
+    var u = e.target.closest("[data-up]"), d = e.target.closest("[data-down]"), p = e.target.closest("[data-person]");
+    if (u){ var i = +u.getAttribute("data-up"); people.splice(i - 1, 0, people.splice(i, 1)[0]); savePeople(); drawPeople(); drawCalm(); }
+    else if (d){ var j = +d.getAttribute("data-down"); people.splice(j + 1, 0, people.splice(j, 1)[0]); savePeople(); drawPeople(); drawCalm(); }
+    else if (p) editPerson(p.getAttribute("data-person"));
+  });
+  var editing = null;
+  function editPerson(id){
+    editing = id ? byId(people, id) : null;
+    var p = editing || { name:"", phone:"", coach:false, come:false, note:"" };
+    $("pe-title").textContent = editing ? "Change " + (p.name || "person") : "Add a person";
+    $("pe-name").value = p.name; $("pe-phone").value = p.phone; $("pe-note").value = p.note || "";
+    $("pe-coach").checked = !!p.coach; $("pe-come").checked = !!p.come;
+    $("pe-del").classList.toggle("hide", !editing);
+    $("person").showModal();
+  }
+  $("person-add").addEventListener("click", function(){ editPerson(null); });
+  $("pe-save").addEventListener("click", function(){
+    var v = { name:$("pe-name").value.trim().slice(0, 40), phone:$("pe-phone").value.trim().slice(0, 30),
+              coach:$("pe-coach").checked, come:$("pe-come").checked, note:$("pe-note").value.trim().slice(0, 80) };
+    if (!v.name){ $("pe-name").focus(); return; }
+    if (editing) Object.assign(editing, v); else { v.id = uid(); people.push(v); }
+    savePeople(); $("person").close(); drawPeople(); drawCalm(); toast("Saved.");
+  });
+  $("pe-del").addEventListener("click", function(){
+    if (!editing) return;
+    people = people.filter(function(p){ return p !== editing; });
+    savePeople(); $("person").close(); drawPeople(); drawCalm(); toast("Removed.");
+  });
+
+  /* ================= my info: home ================= */
+  function itemDone(it){
+    var i = homeInfo[it.id] || {};
+    return it.do.every(function(k){ return k === "photo" ? !!i.photo : k === "practice" ? !!i.tried : !!i.known; });
+  }
+  var KIND = { photo:"Photo", practice:"Try it", look:"Look only" };
+  function drawHome(){
+    var done = HOME_ITEMS.filter(itemDone).length;
+    $("home-bar").style.width = Math.round(100 * done / HOME_ITEMS.length) + "%";
+    $("home-count").textContent = done + " of " + HOME_ITEMS.length + " done";
+    $("home-walk").textContent = done ? "Keep going" : "Walk through my home";
+    var h = "";
+    HOME_GROUPS.forEach(function(g){
+      h += '<div class="hgroup"><h3>' + g.title + '</h3>' + HOME_ITEMS.filter(function(it){ return it.group === g.id; }).map(function(it){
+        var i = homeInfo[it.id] || {}, ok = itemDone(it);
+        var th = i.photo ? '<img class="thumb" data-photo="' + it.id + '" alt="">' : '<span class="thumb">' + svg(it.do[0] === "practice" ? "hand" : it.do[0] === "look" ? "eye" : "camera") + '</span>';
+        return '<button type="button" class="hrow" data-item="' + it.id + '">' + th + '<span><span class="ti">' + esc(it.title) + '</span><br><span class="mt">' +
+          it.do.map(function(k){ return KIND[k]; }).join(" + ") + (i.note ? " · " + esc(i.note) : "") + '</span></span>' +
+          '<span class="badge ' + (ok ? "clean" : "none") + '">' + (ok ? "Done" : "Not yet") + '</span></button>';
+      }).join("") + '</div>';
+    });
+    $("home-list").innerHTML = h;
+    fillPhotos($("home-list"));
+  }
+  $("home-list").addEventListener("click", function(e){ var b = e.target.closest("[data-item]"); if (b) openItem(b.getAttribute("data-item"), false); });
+  $("home-walk").addEventListener("click", function(){
+    var first = HOME_ITEMS.filter(function(it){ return !itemDone(it); })[0] || HOME_ITEMS[0];
+    openItem(first.id, true);
+  });
+
+  var itemId = null, walking = false;
+  function openItem(id, walk){
+    itemId = id; walking = walk;
+    var it = ITEM[id], i = homeInfo[id] || {}, idx = HOME_ITEMS.indexOf(it);
+    $("it-count").textContent = walking ? (idx + 1) + " of " + HOME_ITEMS.length : (HOME_GROUPS.filter(function(g){ return g.id === it.group; })[0].title);
+    $("it-title").textContent = it.title;
+    $("it-kinds").innerHTML = it.do.map(function(k){ return '<span class="kind">' + KIND[k] + '</span>'; }).join("");
+    $("it-how").textContent = it.how;
+    var wantsPhoto = it.do.indexOf("photo") >= 0;
+    $("it-photo-wrap").classList.toggle("hide", !wantsPhoto && !i.photo);
+    drawItemPhoto();
+    $("it-tried-wrap").classList.toggle("hide", it.do.indexOf("practice") < 0);
+    $("it-known-wrap").classList.toggle("hide", it.do.indexOf("look") < 0);
+    $("it-tried").checked = !!i.tried; $("it-known").checked = !!i.known;
+    $("it-note").value = i.note || "";
+    $("it-nav").classList.toggle("hide", !walking);
+    $("it-done").classList.toggle("hide", walking);
+    $("it-back").disabled = idx === 0;
+    $("it-next").textContent = idx === HOME_ITEMS.length - 1 ? "Finish" : "Next";
+    $("it-close").textContent = walking ? "Stop for now" : "Close";
+    if (!$("item").open) $("item").showModal();
+    $("item").scrollTop = 0;
+  }
+  function drawItemPhoto(){
+    var i = homeInfo[itemId] || {}, box = $("it-photo");
+    $("it-rmphoto").classList.toggle("hide", !i.photo);
+    $("it-take-label").textContent = i.photo ? "Take a new photo" : "Take or choose a photo";
+    if (i.photo){
+      box.innerHTML = '<img data-photo="' + itemId + '" alt="Your photo">'; fillPhotos(box);
+    } else box.textContent = "No photo yet";
+  }
+  function keepItem(){
+    var i = homeInfo[itemId] || {};
+    i.note = $("it-note").value.trim().slice(0, 200);
+    i.tried = $("it-tried").checked; i.known = $("it-known").checked;
+    homeInfo[itemId] = i; saveHome();
+  }
+  $("it-file").addEventListener("change", function(){
+    var f = this.files && this.files[0], input = this, id = itemId;
+    if (!f) return;
+    $("it-photo").textContent = "Saving photo…";
+    shrink(f).then(function(b){ return putPhoto(id, b); }).then(function(){
+      forgetURL(id);
+      var i = homeInfo[id] || {}; i.photo = true; homeInfo[id] = i; saveHome();
+      if (itemId === id) drawItemPhoto();
+      toast("Photo saved.");
+    }).catch(function(){
+      $("it-photo").textContent = "That photo couldn't be saved. Try another one.";
+    }).then(function(){ input.value = ""; });
+  });
+  $("it-rmphoto").addEventListener("click", function(){
+    var id = itemId;
+    delPhoto(id).catch(function(){}).then(function(){
+      forgetURL(id); var i = homeInfo[id] || {}; delete i.photo; homeInfo[id] = i; saveHome(); drawItemPhoto();
+    });
+  });
+  function step(d){
+    keepItem();
+    var idx = HOME_ITEMS.indexOf(ITEM[itemId]) + d;
+    if (idx >= HOME_ITEMS.length){ $("item").close(); toast("That's the whole house. Nice work."); return; }
+    if (idx >= 0) openItem(HOME_ITEMS[idx].id, true);
+  }
+  $("it-next").addEventListener("click", function(){ step(1); });
+  $("it-back").addEventListener("click", function(){ step(-1); });
+  $("it-done").addEventListener("click", function(){ $("item").close(); });
+  /* Whatever closes the dialog (Done, Close, Escape), keep what was typed. */
+  $("item").addEventListener("close", function(){ keepItem(); drawHome(); });
+
+  /* ================= my info: places, services ================= */
+  function drawInfo(){
+    drawPeople(); drawHome();
+    $("addr").value = place.address || "";
+    $("services").innerHTML = SERVICES.map(function(s){ return '<div class="svc"><span>' + esc(s.name) + '</span><a href="tel:' + digits(s.phone) + '">' + esc(s.phone) + '</a></div>'; }).join("") +
+      '<div class="svc"><span>Bank card</span><span class="sub" style="margin:0">On the back of your card</span></div>';
+  }
+  $("addr").addEventListener("change", function(){ place.address = this.value.trim().slice(0, 160); save("mh_place", place); toast("Address saved."); });
+
+  /* ================= keep a copy ================= */
+  function blobToData(b){ return new Promise(function(res){ var r = new FileReader(); r.onload = function(){ res(r.result); }; r.readAsDataURL(b); }); }
+  function dataToBlob(d){ var p = d.split(","), m = /data:([^;]+)/.exec(p[0]), bin = atob(p[1]), a = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type:m ? m[1] : "image/jpeg" }); }
+  function downloadBlob(blob, name){
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1500);
+  }
+  $("b-save").addEventListener("click", function(){
+    var ids = Object.keys(homeInfo).filter(function(k){ return homeInfo[k].photo; }), photos = {};
+    Promise.all(ids.map(function(id){ return getPhoto(id).then(function(b){ return b ? blobToData(b).then(function(d){ photos[id] = d; }) : null; }).catch(function(){}); }))
+    .then(function(){
+      var payload = { app:"mishaps", format:1, exported:new Date().toISOString(), people:people, home:homeInfo, place:place, practice:practice, photos:photos };
+      var name = "mishaps-" + today() + ".json";
+      var blob = new Blob([JSON.stringify(payload)], { type:"application/json" }), file = null;
+      try { file = new File([blob], name, { type:"application/json" }); } catch(e){}
+      if (file && navigator.canShare && navigator.canShare({ files:[file] })){
+        navigator.share({ files:[file], title:"Mishaps copy" }).catch(function(err){ if (!err || err.name !== "AbortError") downloadBlob(blob, name); });
+      } else downloadBlob(blob, name);
+    });
+  });
+  var pending = null;
+  $("b-open").addEventListener("change", function(){
+    var f = this.files && this.files[0], input = this, msg = $("b-msg");
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      var d = null; try { d = JSON.parse(rd.result); } catch(e){}
+      msg.classList.remove("hide");
+      if (!d || d.app !== "mishaps" || !Array.isArray(d.people)){
+        msg.innerHTML = '<p class="msg oops">That file isn’t a Mishaps copy. Look for a name like mishaps-2026-10-31.json.</p>';
+      } else {
+        pending = d;
+        msg.innerHTML = '<p class="msg good">This copy has ' + d.people.length + ' people and ' + Object.keys(d.photos || {}).length + ' photos. Opening it replaces what’s on this phone now.</p>' +
+          '<div class="btn-row" style="margin-top:9px"><button type="button" class="btn ghost" id="b-cancel">Cancel</button><button type="button" class="btn" id="b-replace">Replace with this copy</button></div>';
+        $("b-cancel").addEventListener("click", function(){ pending = null; msg.classList.add("hide"); });
+        $("b-replace").addEventListener("click", restore);
+      }
+      input.value = "";
+    };
+    rd.readAsText(f);
+  });
+  function restore(){
+    var d = pending; if (!d) return;
+    people = d.people.filter(function(p){ return p && typeof p.name === "string"; }).map(function(p){
+      return { id:String(p.id || uid()), name:p.name.slice(0, 40), phone:String(p.phone || "").slice(0, 30), coach:!!p.coach, come:!!p.come, note:String(p.note || "").slice(0, 80) };
+    });
+    homeInfo = {};
+    Object.keys(d.home || {}).forEach(function(k){ if (ITEM[k]){ var x = d.home[k]; homeInfo[k] = { note:String(x.note || "").slice(0, 200), tried:!!x.tried, known:!!x.known }; } });
+    place = { address:String((d.place && d.place.address) || "").slice(0, 160) };
+    practice = (d.practice && typeof d.practice === "object") ? d.practice : {};
+    Object.keys(urlCache).forEach(forgetURL);
+    clearPhotos().catch(function(){}).then(function(){
+      return Promise.all(Object.keys(d.photos || {}).filter(function(k){ return ITEM[k]; }).map(function(k){
+        return putPhoto(k, dataToBlob(d.photos[k])).then(function(){ homeInfo[k] = homeInfo[k] || {}; homeInfo[k].photo = true; }).catch(function(){});
+      }));
+    }).then(function(){
+      savePeople(); saveHome(); save("mh_place", place); save("mh_practice", practice);
+      pending = null; drawInfo(); drawCalm();
+      $("b-msg").innerHTML = '<p class="msg good">Done. Everything now matches the copy.</p>';
+    });
+  }
+
+  /* ================= how it works ================= */
+  var GUIDE = [
+    ["home", "Pick what’s happening", "On <b>Help now</b>, tap the mishap. The app shows one step at a time. Tap <b>Done</b> to see the next one, or answer the question with the buttons."],
+    ["phone", "Help is always one tap away", "While a mishap is open, the bar at the bottom has <b>Call someone</b> and <b>911</b>. The people come from <b>My info</b>, in the order you set."],
+    ["breath", "When it’s a lot", "Tap <b>I’m really anxious</b>. You get three slow breaths, then the same steps with a few extra words of support. It stays on until you turn it off."],
+    ["book", "Practice when it’s calm", "On <b>Practice</b>, pick what you’d do in each situation. You see why it works, or what works better. Your results stay on this phone unless you share them."],
+    ["camera", "Set up My info", "Add phone numbers, then tap <b>Walk through my home</b> to take photos of things like the water shutoff. Your photos show up right inside the steps."],
+    ["check", "Keep it one tap away", "In Safari, tap the Share button, then <b>Add to Home Screen</b>. Mishaps opens with one tap and works with no signal."]
+  ];
+  var gi = 0;
+  $("g-dots").innerHTML = GUIDE.map(function(){ return "<i></i>"; }).join("");
+  function drawGuide(){
+    $("g-count").textContent = (gi + 1) + " of " + GUIDE.length;
+    $("g-pic").innerHTML = svg(GUIDE[gi][0], 1.6);
+    $("g-title").textContent = GUIDE[gi][1];
+    $("g-text").innerHTML = GUIDE[gi][2];
+    Array.prototype.forEach.call($("g-dots").children, function(d, i){ d.className = i === gi ? "on" : ""; });
+    $("g-back").disabled = gi === 0;
+    $("g-next").textContent = gi === GUIDE.length - 1 ? "Done" : "Next";
+  }
+  function openGuide(){ gi = 0; drawGuide(); $("guide").showModal(); store("mh_seen_guide", "1"); }
+  $("help-open").addEventListener("click", openGuide);
+  $("g-back").addEventListener("click", function(){ if (gi > 0){ gi--; drawGuide(); } });
+  $("g-next").addEventListener("click", function(){ if (gi < GUIDE.length - 1){ gi++; drawGuide(); } else $("guide").close(); });
+
+  /* ================= start ================= */
+  $("ver").textContent = VERSION;
+  drawCalm(); drawList();
+  var t = store("mh_tab"); showTab(TABS.indexOf(t) >= 0 ? t : "help");
+  if (!store("mh_seen_guide")) setTimeout(openGuide, 300);
+
+  /* A service worker is a small script the browser keeps running in the background
+     for this site. Ours saves a copy of the app, so it opens with no signal. */
+  if ("serviceWorker" in navigator && location.protocol === "https:"){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+})();
+</script>
+</body>
+</html>
