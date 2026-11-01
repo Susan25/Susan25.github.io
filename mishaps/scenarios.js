@@ -19,7 +19,8 @@
      why     shown when she taps "Why?"
      home    a My Home item (or list of them) whose photo + note to show
      call    buttons to show: "911", "people" (her list, in order), "coach",
-             "come", "novec", "gas", "uber", "whereami", "sendloc", "directions"
+             "come", "novec", "gas", "uber", "whereami", "sendloc", "directions",
+             "findmy" (opens the Find My app)
      danger  true for get-out / call-911 steps (stronger styling)
 
    Practice choice results (r):
@@ -351,8 +352,10 @@ var SCENARIOS = [
       more: ["A store, a café, the library, or a neighbor you know.", "Tell whoever's coming where you are."],
       call: ["sendloc"], next: "end" },
     end: { t: "end", text: "While you wait:",
-      more: ["Don't call a locksmith you find online unless someone on your list says to. Some charge far more than they quote.",
+      more: ["Check Find My to see how far away they are.",
+             "Don't call a locksmith you find online unless someone on your list says to. Some charge far more than they quote.",
              "If someone makes you feel unsafe, go into a busy store or call 911."],
+      call: ["findmy"],
       calm: "You've called for help. Now you just wait somewhere comfortable." }
   },
   practice: [
@@ -544,8 +547,8 @@ var SCENARIOS = [
       next: "already" },
     already: { t: "ask", text: "Did you already tap a link, share information, or pay?",
       opts: [ { label: "No", next: "delete" }, { label: "Yes", next: "tell" } ] },
-    delete: { t: "end", text: "Delete it.",
-      more: ["For a text, you can forward it to 7726 (SPAM) first to report it.",
+    delete: { t: "end", text: "Report it as junk and delete it.",
+      more: ["If your iPhone shows Delete and Report Junk, tap that. It reports it and deletes it in one go.",
              "Talking it over with someone on your list helps you see it clearly."],
       call: ["coach"] },
     tell: { t: "end", text: "Tell someone on your list right away.",
@@ -557,9 +560,9 @@ var SCENARIOS = [
   practice: [
     { q: "A text says: “USPS: your package is on hold. Pay $1.99 at this link within 24 hours.” What do you do?",
       choices: [
-        { text: "Don't tap it. Delete it, or forward it to 7726 first", r: "right", fb: "Yes. Rushing you and asking for a small fee by link are classic scam signs." },
+        { text: "Don't tap it. Tap Delete and Report Junk", r: "right", fb: "Yes. Rushing you and asking for a small fee by link are classic scam signs." },
         { text: "Tap the link; it's only $1.99", r: "never", fb: "Never pay through a link in a surprise text. They want your card number, not the $1.99." },
-        { text: "Reply STOP", r: "not", fb: "Replying tells scammers your number works. Just delete it." },
+        { text: "Reply STOP", r: "not", fb: "Replying tells scammers your number works. Just report it as junk." },
         { text: "Check whether I'm actually expecting a package", r: "ok", fb: "Good idea. If you are, check the tracking in the store's own app, not the text." }
       ] },
     { q: "A caller says he's from your bank and needs the code they just texted you. What do you do?",
@@ -677,7 +680,8 @@ var SCENARIOS = [
     coming: { t: "ask", text: "Is a new car coming?",
       opts: [ { label: "Yes", next: "end" }, { label: "No cars, or it's taking too long", next: "fam" } ] },
     fam: { t: "step", text: "Call someone on your list to come get you.",
-      call: ["come", "people"],
+      more: ["Find My shows how far away they are."],
+      call: ["come", "people", "findmy"],
       calm: "Asking for a ride is a good plan, not a failure.",
       next: "end" },
     end: { t: "end", text: "Good to remember:",
@@ -732,6 +736,48 @@ var SCENARIOS = [
       choices: [
         { text: "The back seat", r: "right", fb: "Yes. You can get out on either side, and you have your own space." },
         { text: "The front seat", r: "not", fb: "The back seat is safer, especially when you're riding alone." }
+      ] }
+  ]
+}
+,
+/* ============================== 15. Can't reach someone ============================== */
+{
+  id: "cant-reach", title: "Can't reach someone", group: "out", icon: "phone",
+  keywords: ["reach", "answer", "call", "voicemail", "where", "find my", "no answer", "family"],
+  start: "again",
+  nodes: {
+    again: { t: "step", text: "Try calling once more. Then send a text.",
+      more: ["Something like: \u201cCall me when you can.\u201d"],
+      call: ["people"],
+      calm: "People miss calls all the time. It usually means they're busy, not that something's wrong.",
+      next: "where" },
+    where: { t: "step", text: "See where they are.",
+      more: ["If they're driving or at work, that often explains why they didn't pick up."],
+      call: ["findmy"],
+      next: "urgent" },
+    urgent: { t: "ask", text: "Is it urgent?",
+      opts: [
+        { label: "No, it can wait", next: "wait" },
+        { label: "Yes, I need help now", next: "next" },
+        { label: "It's an emergency", next: "sos" }
+      ] },
+    wait: { t: "end", text: "Wait for them to call back.",
+      more: ["They'll see your missed call and your text."],
+      calm: "You've done everything you need to. They'll get back to you." },
+    next: { t: "end", text: "Call the next person on your list.",
+      call: ["people"],
+      calm: "That's what the list is for. Someone will pick up." },
+    sos: { t: "end", danger: true, text: "Call 911.",
+      more: ["Then keep trying your people, or text them what's happening."],
+      call: ["911"] }
+  },
+  practice: [
+    { q: "You've called twice and nobody on your list is answering. It isn't urgent. What do you do?",
+      choices: [
+        { text: "Send a text, check Find My to see where they are, then wait for a call back", r: "right", fb: "Yes. A text and a look at Find My usually explain it, like someone driving or in a meeting." },
+        { text: "Keep calling every minute until they answer", r: "not", fb: "One more try is plenty. Send a text instead; they'll see it when they can." },
+        { text: "Call 911", r: "not", fb: "911 is for emergencies. If it isn't urgent, text and wait." },
+        { text: "Check Find My to see where they are", r: "ok", fb: "Good idea. Seeing where they are often explains the missed call. Send a text too." }
       ] }
   ]
 }

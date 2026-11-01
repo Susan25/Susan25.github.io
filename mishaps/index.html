@@ -777,7 +777,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
      here still shows up, at the end of its group, so new ones need no change here. */
   var GROUPS = [
     { id:"home",  title:"At home",        order:["smoke-alarm","stove","co-alarm","gas","overflow","toilet","power","locked-out"] },
-    { id:"out",   title:"Out and about",  order:["lost","transit","uber-noshow","uber-match"] },
+    { id:"out",   title:"Out and about",  order:["lost","cant-reach","transit","uber-noshow","uber-match"] },
     { id:"money", title:"Money and messages", order:["card","scam"] }
   ];
   GROUPS.forEach(function(g){
@@ -843,6 +843,10 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     return '<div class="callrow"><a class="btn" href="tel:' + d + '">' + svg("phone", 2) + esc(SAY[kind](p.name)) + '</a>' +
       '<a class="btn ghost" href="sms:' + d + '">Text</a></div>' + (p.note ? '<p class="callnote">' + esc(p.note) + '</p>' : "");
   }
+  /* findmy:// asks iOS to open the Find My app. Apple doesn't document this link, so the
+     written steps sit next to it in case it ever stops working. */
+  var FINDMY = '<a class="btn ghost" href="findmy://">' + svg("pin", 2) + 'See where your people are</a>' +
+    '<p class="callnote">Or open Find My, tap People, then tap a name.</p>';
   function callsHTML(list){
     if (!list || !list.length) return "";
     var shown = {}, out = [], noPeople = false;
@@ -865,14 +869,17 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
         var u = "https://m.uber.com/ul/?action=setPickup&pickup=my_location" + (place.address ? "&dropoff[formatted_address]=" + encodeURIComponent(place.address) : "");
         out.push('<a class="btn ghost" href="' + esc(u) + '">' + svg("car", 2) + 'Open Uber</a>');
       }
+      else if (c === "findmy") out.push(FINDMY);
       else if (c === "whereami") out.push('<button type="button" class="btn" data-loc="show">' + svg("pin", 2) + 'Show where I am</button><div class="locbox hide" data-locout></div>');
       else if (c === "sendloc") out.push('<button type="button" class="btn" data-loc="send">' + svg("pin", 2) + 'Send my location</button><div class="locbox hide" data-locout></div>');
       else if (c === "directions"){
         if (place.address){
           var a = encodeURIComponent(place.address);
-          out.push('<div class="btn-row"><a class="btn" href="https://maps.apple.com/?daddr=' + a + '&dirflg=w">Walking</a><a class="btn" href="https://maps.apple.com/?daddr=' + a + '&dirflg=r">Transit</a></div>');
+          /* Google Maps links open the Google Maps app when it's installed, the website when not. */
+          var g = "https://www.google.com/maps/dir/?api=1&destination=" + a + "&travelmode=";
+          out.push('<div class="btn-row"><a class="btn" href="' + g + 'walking">Walking</a><a class="btn" href="' + g + 'transit">Transit</a></div>');
         } else {
-          out.push('<a class="btn" href="https://maps.apple.com/">' + svg("pin", 2) + 'Open Maps</a><p class="homehint">Add your home address in My info, and this opens directions home in one tap.</p>');
+          out.push('<a class="btn" href="https://www.google.com/maps">' + svg("pin", 2) + 'Open Google Maps</a><p class="homehint">Add your home address in My info, and this opens directions home in one tap.</p>');
         }
       }
     });
@@ -889,7 +896,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
       navigator.geolocation.getCurrentPosition(function(p){ lastPos = p; res(p); }, rej, { enableHighAccuracy:true, timeout:15000, maximumAge:60000 });
     });
   }
-  function mapLink(p){ var c = p.coords.latitude.toFixed(5) + "," + p.coords.longitude.toFixed(5); return "https://maps.apple.com/?ll=" + c + "&q=" + encodeURIComponent("I'm here"); }
+  function mapLink(p){ var c = p.coords.latitude.toFixed(5) + "," + p.coords.longitude.toFixed(5); return "https://www.google.com/maps/search/?api=1&query=" + c; }
   document.addEventListener("click", function(e){
     var b = e.target.closest("[data-loc]"); if (!b) return;
     var out = b.nextElementSibling, mode = b.getAttribute("data-loc");
@@ -907,7 +914,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
       }
     }).catch(function(){
       out.innerHTML = mode === "show"
-        ? "Couldn't find your location. Open the Maps app; the blue dot is you."
+        ? "Couldn't find your location. Open Google Maps; the blue dot is you."
         : "Couldn't get your location here. In Messages, open the chat, tap <b>+</b>, then <b>Location</b>, and send it.";
     });
   });
@@ -949,6 +956,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     var ppl = callable(), h = "";
     if (calm){ ppl = ppl.filter(function(p){ return p.coach; }).concat(ppl.filter(function(p){ return !p.coach; })); }
     h += ppl.length ? ppl.map(function(p){ return personBtns(p, "call"); }).join("") : '<p class="note spot">No numbers yet. Add them in <b>My info</b>.</p>';
+    h += FINDMY;
     h += SERVICES.map(function(s){ return '<a class="btn ghost" href="tel:' + digits(s.phone) + '">Call ' + esc(s.name) + '</a>'; }).join("");
     h += '<a class="btn sos" href="tel:911">' + svg("phone", 2) + 'Call 911</a>';
     $("cs-list").innerHTML = h;
