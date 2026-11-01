@@ -773,11 +773,16 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
   $("run-calm").addEventListener("click", function(){ if (calm) turnCalmOff(); else turnCalmOn(); });
 
   /* ================= mishap list ================= */
+  /* "order" sets which mishaps come first in each group. Any scenario not named
+     here still shows up, at the end of its group, so new ones need no change here. */
   var GROUPS = [
     { id:"home",  title:"At home",        order:["smoke-alarm","stove","co-alarm","gas","overflow","toilet","power","locked-out"] },
     { id:"out",   title:"Out and about",  order:["lost","transit","uber-noshow","uber-match"] },
     { id:"money", title:"Money and messages", order:["card","scam"] }
   ];
+  GROUPS.forEach(function(g){
+    SCENARIOS.forEach(function(s){ if (s.group === g.id && g.order.indexOf(s.id) < 0) g.order.push(s.id); });
+  });
   function matches(s, q){
     if (!q) return true;
     var hay = (s.title + " " + s.keywords.join(" ")).toLowerCase();
