@@ -228,47 +228,29 @@ var SCENARIOS = [
   start: "noflush",
   nodes: {
     noflush: { t: "step", text: "Don't flush again.",
-      calm: "Gross, but not dangerous. Don't flush, and the water stops rising.",
+      calm: "Gross, but not dangerous. Not flushing keeps it from getting worse.",
       why: "Each flush adds more water, and it goes on the floor.",
-      next: "rising" },
-    rising: { t: "ask", text: "Is the water in the bowl still rising?",
-      opts: [ { label: "Yes", next: "float" }, { label: "No", next: "wait" } ] },
-    float: { t: "step", text: "Take the lid off the tank behind the bowl. Lift the floating part up and hold it.",
-      more: ["Set the lid down gently. It can crack.", "Holding the float up stops new water coming in."],
-      home: "toilet_tank", next: "valve" },
+      next: "valve" },
     valve: { t: "step", text: "Turn the valve on the wall behind the toilet to the right until it stops.",
-      home: "toilet_valves", next: "wait" },
-    wait: { t: "step", text: "Wait a few minutes.",
-      more: ["Often the water slowly goes down on its own."], next: "plunge" },
-    plunge: { t: "step", text: "Plunge.",
-      more: ["Put the plunger in the bowl so the cup covers the hole.",
-             "Push down gently the first time.",
-             "Then push and pull firmly about 10 times, keeping the seal."],
-      home: "plunger",
-      calm: "It often takes a few tries. That's normal.",
-      next: "drained" },
-    drained: { t: "ask", text: "Did the water drain away?",
-      opts: [
-        { label: "Yes", next: "refill" },
-        { label: "No, after 2 or 3 tries", next: "help" }
-      ] },
-    refill: { t: "step", text: "Turn the wall valve back to the left. Let the tank fill, then flush once to check.",
+      more: ["It's near the floor. Turning it off stops any more water coming in."],
+      home: "toilet_valves",
+      calm: "That's the important part done. Now you just get help.",
+      next: "help" },
+    help: { t: "step", text: "Call someone on your list.",
+      more: ["They can talk you through what's next, or deal with it when they're home."],
+      call: ["coach", "people"],
+      calm: "It's fine to leave the rest to someone else. It'll keep until then.",
       next: "clean" },
-    help: { t: "step", text: "Stop here and get help.",
-      more: ["Someone can talk you through it on the phone, or deal with it when they're home."],
-      call: ["coach"],
-      calm: "It's fine to stop here. It'll keep until then.",
-      next: "clean" },
-    clean: { t: "end", text: "Clean up.",
+    clean: { t: "end", text: "Clean up any water on the floor.",
       more: ["Put towels down and wear rubber gloves if you have them.", "Wash your hands well afterward."],
       home: "gloves" }
   },
   practice: [
     { q: "You flush and the water rises toward the top of the bowl. What do you do?",
       choices: [
-        { text: "Lift the float in the tank, then turn off the wall valve", r: "right", fb: "Yes. That stops new water from coming in." },
+        { text: "Turn off the valve on the wall behind the toilet, then call someone", r: "right", fb: "Yes. That stops new water coming in, and someone can help with the rest." },
         { text: "Flush again to push it through", r: "not", fb: "Don't flush again. Each flush adds more water, and it ends up on the floor." },
-        { text: "Start plunging right away", r: "notfirst", fb: "Plunging works best once the water stops rising. Float and valve first." },
+        { text: "Start plunging right away", r: "not", fb: "Leave the plunging for later. Turn off the water first and get help." },
         { text: "Pour drain cleaner in", r: "not", fb: "Skip chemical cleaners. They can splash and burn, and rarely fix a toilet clog." }
       ] }
   ]
@@ -714,7 +696,7 @@ var SCENARIOS = [
 
 /* ============================== 14. Car doesn't match ============================== */
 {
-  id: "uber-match", title: "The car doesn't match the app", group: "out", icon: "plate",
+  id: "uber-match", title: "The Uber car doesn't match the app", group: "out", icon: "plate",
   keywords: ["uber", "car", "driver", "plate", "license", "wrong car", "match", "ride"],
   start: "check",
   nodes: {
@@ -776,9 +758,7 @@ var HOME_ITEMS = [
   { id: "bath_valves", group: "water", title: "Bathroom sink valves", do: ["photo", "practice"],
     how: "Under each bathroom sink. Note which bathroom in the note." },
   { id: "toilet_valves", group: "water", title: "Toilet valves", do: ["photo", "practice"],
-    how: "On the wall behind each toilet, near the floor. Right to close." },
-  { id: "toilet_tank", group: "water", title: "Inside a toilet tank", do: ["practice"],
-    how: "Lift the tank lid and set it down gently. Find the float, and lift it once. That's what stops new water." },
+    how: "On the wall behind each toilet, near the floor. Turn it to the right once to close it, then back." },
   { id: "washer_valves", group: "water", title: "Washing machine valves", do: ["photo"],
     how: "Behind the washer, where the hoses connect." },
   { id: "water_heater", group: "water", title: "Water heater", do: ["look"],
