@@ -20,8 +20,12 @@
      home    a My Home item (or list of them) whose photo + note to show
      call    buttons to show: "911", "people" (her list, in order), "coach",
              "come", "novec", "gas", "uber", "whereami", "sendloc", "directions",
-             "findmy" (opens the Find My app)
+             "findmy" (opens the Find My app), "doctor", "urgentcare",
+             "mednote" (shows her medical note from My info)
      danger  true for get-out / call-911 steps (stronger styling)
+     level   on health end screens: "self", "doctor" or "911" (shown as a label)
+
+   An answer in an "ask" can open another scenario with  run: "id"  instead of  next.
 
    Practice choice results (r):
      "right"     the best answer
@@ -547,8 +551,8 @@ var SCENARIOS = [
       next: "already" },
     already: { t: "ask", text: "Did you already tap a link, share information, or pay?",
       opts: [ { label: "No", next: "delete" }, { label: "Yes", next: "tell" } ] },
-    delete: { t: "end", text: "Report it as junk and delete it.",
-      more: ["If your iPhone shows Delete and Report Junk, tap that. It reports it and deletes it in one go.",
+    delete: { t: "end", text: "Report it as spam and delete it.",
+      more: ["If your iPhone shows Delete and Report Spam, tap that. It reports it and deletes it in one go.",
              "Talking it over with someone on your list helps you see it clearly."],
       call: ["coach"] },
     tell: { t: "end", text: "Tell someone on your list right away.",
@@ -560,9 +564,9 @@ var SCENARIOS = [
   practice: [
     { q: "A text says: “USPS: your package is on hold. Pay $1.99 at this link within 24 hours.” What do you do?",
       choices: [
-        { text: "Don't tap it. Tap Delete and Report Junk", r: "right", fb: "Yes. Rushing you and asking for a small fee by link are classic scam signs." },
+        { text: "Don't tap it. Tap Delete and Report Spam", r: "right", fb: "Yes. Rushing you and asking for a small fee by link are classic scam signs." },
         { text: "Tap the link; it's only $1.99", r: "never", fb: "Never pay through a link in a surprise text. They want your card number, not the $1.99." },
-        { text: "Reply STOP", r: "not", fb: "Replying tells scammers your number works. Just report it as junk." },
+        { text: "Reply STOP", r: "not", fb: "Replying tells scammers your number works. Just report it as spam." },
         { text: "Check whether I'm actually expecting a package", r: "ok", fb: "Good idea. If you are, check the tracking in the store's own app, not the text." }
       ] },
     { q: "A caller says he's from your bank and needs the code they just texted you. What do you do?",
@@ -778,6 +782,473 @@ var SCENARIOS = [
         { text: "Keep calling every minute until they answer", r: "not", fb: "One more try is plenty. Send a text instead; they'll see it when they can." },
         { text: "Call 911", r: "not", fb: "911 is for emergencies. If it isn't urgent, text and wait." },
         { text: "Check Find My to see where they are", r: "ok", fb: "Good idea. Seeing where they are often explains the missed call. Send a text too." }
+      ] }
+  ]
+}
+,
+/* ======================================================================
+   HEALTH AND WELLNESS
+   Every path ends at one of three levels (level: on the last node):
+     "self"   fix it yourself
+     "doctor" call the doctor's office or go to urgent care
+     "911"    call 911 (also marked danger)
+   An answer can open another scenario with  run: "scenario-id"  instead of next.
+   Sources: Mayo Clinic first aid pages, Cleveland Clinic (stitches),
+   American College of Emergency Physicians warning signs. Checked Nov 2026.
+   ====================================================================== */
+
+/* ============================== H1. Is this an emergency? ============================== */
+{
+  id: "emergency", title: "Is this an emergency?", group: "health", icon: "aid",
+  keywords: ["emergency", "hurt", "sick", "911", "pain", "breathing", "chest", "bleeding", "injury", "doctor"],
+  start: "signs",
+  nodes: {
+    signs: { t: "ask", text: "Is any of this happening?",
+      more: ["Trouble breathing, or short of breath",
+             "Chest pain or pressure lasting more than 2 minutes",
+             "Fainting, or sudden dizziness or weakness",
+             "Trouble speaking, or a sudden change in vision",
+             "Confusion, or very hard to stay awake",
+             "Bleeding that won't stop",
+             "Sudden, severe pain",
+             "Coughing up or throwing up blood"],
+      calm: "If you're not sure, choose yes. Calling 911 when you weren't sure is never wrong.",
+      opts: [
+        { label: "Yes, at least one", next: "call" },
+        { label: "None of those", next: "what" }
+      ] },
+    call: { t: "step", danger: true, text: "Call 911 now.",
+      more: ["Say what's happening and where you are.",
+             "Stay on the phone and do what they tell you.",
+             "If you have a medical note in My info, show it to the paramedics."],
+      call: ["911", "mednote"],
+      calm: "Calling is exactly right. They'll talk you through it.",
+      next: "tell" },
+    tell: { t: "end", danger: true, level: "911", text: "Then let someone on your list know.",
+      call: ["people"] },
+    what: { t: "ask", text: "What happened?",
+      opts: [
+        { label: "A cut or scrape", run: "cut" },
+        { label: "A burn", run: "burn" },
+        { label: "I fell or hit my head", run: "head" },
+        { label: "I twisted an ankle or wrist", run: "sprain" },
+        { label: "A nosebleed", run: "nosebleed" },
+        { label: "A bee sting or allergic reaction", run: "sting" },
+        { label: "I feel sick", run: "sick" },
+        { label: "Something else", next: "other" }
+      ] },
+    other: { t: "end", level: "doctor", text: "Not sure? Call the doctor's office.",
+      more: ["They can tell you whether to come in, go to urgent care, or look after it at home.",
+             "If it gets worse, or any of the warning signs start, call 911."],
+      call: ["doctor", "coach"] }
+  },
+  practice: [
+    { q: "You've had a heavy feeling in your chest for a few minutes and you feel short of breath. What do you do?",
+      choices: [
+        { text: "Call 911 now", r: "right", fb: "Yes. Chest pain with trouble breathing is an emergency. Call right away." },
+        { text: "Lie down and see if it passes", r: "never", fb: "Don't wait with chest pain or trouble breathing. Call 911 right away." },
+        { text: "Call the doctor's office for an appointment", r: "not", fb: "This can't wait for an appointment. Call 911." }
+      ] },
+    { q: "You're not sure whether something is serious enough for 911. What's the best choice?",
+      choices: [
+        { text: "Call 911. They'll help you decide", r: "right", fb: "Yes. Calling when you weren't sure is never wrong." },
+        { text: "Wait until someone gets home", r: "not", fb: "If any warning sign is there, don't wait. Call 911, then let someone know." }
+      ] }
+  ]
+},
+
+/* ============================== H2. Cut or scrape ============================== */
+{
+  id: "cut", title: "Cut or scrape", group: "health", icon: "bandage",
+  keywords: ["cut", "scrape", "bleeding", "blood", "bandage", "band-aid", "bactine", "knife", "stitches", "wound"],
+  start: "spurt",
+  nodes: {
+    spurt: { t: "ask", text: "Is blood spurting out, or soaking through a cloth fast?",
+      opts: [ { label: "Yes", next: "sos" }, { label: "No", next: "press" } ] },
+    sos: { t: "end", danger: true, level: "911", text: "Call 911. Keep pressing hard on the cut.",
+      more: ["Use a cloth or towel, and don't lift it to look.", "Then let someone on your list know."],
+      call: ["911", "people"] },
+    press: { t: "step", text: "Press on it with a clean cloth or bandage.",
+      more: ["Raise it above your heart if you can.", "Keep pressing for 10 minutes without lifting to check."],
+      calm: "Most cuts look worse than they are. Pressing is all it needs right now.",
+      why: "Steady pressure lets the blood clot. Lifting to peek starts it again.",
+      next: "stopped" },
+    stopped: { t: "ask", text: "After 10 minutes, has it stopped, or slowed down a lot?",
+      opts: [ { label: "Yes", next: "check" }, { label: "No", next: "press2" } ] },
+    press2: { t: "step", text: "Press for 5 more minutes.", next: "stopped2" },
+    stopped2: { t: "ask", text: "Has it stopped, or slowed down a lot, now?",
+      opts: [ { label: "Yes", next: "check" }, { label: "No", next: "uc" } ] },
+    uc: { t: "end", level: "doctor", text: "Go to urgent care or the emergency room. Keep pressing on the way.",
+      more: ["Don't drive yourself. Ask someone on your list, or take an Uber."],
+      call: ["come", "urgentcare", "uber"] },
+    check: { t: "ask", text: "Does any of this fit?",
+      more: ["It's deep, or the edges gape open",
+             "It's from a bite, by an animal or a person",
+             "It's from something rusty or dirty, or there's dirt you can't get out",
+             "It's on your face, or over a joint like a knuckle or knee"],
+      opts: [ { label: "Yes", next: "seen" }, { label: "No, it's a small cut or scrape", next: "wash" } ] },
+    seen: { t: "end", level: "doctor", text: "Get it checked today, at the doctor's office or urgent care.",
+      more: ["Cuts that need stitches do best within about 24 hours.",
+             "A dirty cut may need a tetanus shot.",
+             "Let someone on your list know. They can help you get there."],
+      call: ["doctor", "urgentcare", "people"] },
+    wash: { t: "step", text: "Wash your hands, then rinse the cut under running water.",
+      more: ["Wash around it with soap, but keep soap out of the cut."], next: "cover" },
+    cover: { t: "step", text: "Put on antiseptic or antibiotic ointment, then a bandage.",
+      more: ["Something like Bactine or Neosporin, then a Band-Aid.",
+             "Change the bandage every day, or whenever it gets wet or dirty."],
+      home: "first_aid", next: "watch" },
+    watch: { t: "end", level: "self", text: "That's it. Keep an eye on it for a few days.",
+      more: ["Getting redder, warmer, more swollen, more painful, or leaking? Call the doctor's office.",
+             "Let someone at home know if it was more than a scratch."],
+      calm: "You took care of it yourself.",
+      call: ["doctor"] }
+  },
+  practice: [
+    { q: "You cut your finger chopping vegetables. It's bleeding, but not spurting. What do you do first?",
+      choices: [
+        { text: "Press on it with a clean cloth for 10 minutes", r: "right", fb: "Yes. Steady pressure stops most cuts." },
+        { text: "Put a Band-Aid on right away", r: "notfirst", fb: "Stop the bleeding first. A bandage won't stay on while it's still bleeding." },
+        { text: "Lift the cloth every minute to check", r: "not", fb: "Lifting it restarts the bleeding. Hold it for the full 10 minutes." },
+        { text: "Pour hydrogen peroxide on it", r: "not", fb: "Plain running water is better. Peroxide can irritate a cut." }
+      ] },
+    { q: "You've pressed on a cut for 15 minutes and it's still bleeding a lot. What now?",
+      choices: [
+        { text: "Go to urgent care or the ER, keep pressing, and have someone drive", r: "right", fb: "Yes. A cut that keeps bleeding needs a doctor." },
+        { text: "Put a bandage on and wait", r: "not", fb: "If 15 minutes of pressure hasn't slowed it, get it seen today." },
+        { text: "Drive myself to urgent care", r: "not", fb: "Keep both hands free to press. Ask someone on your list, or take an Uber." }
+      ] }
+  ]
+},
+
+/* ============================== H3. Burn ============================== */
+{
+  id: "burn", title: "Burn", group: "health", icon: "burn",
+  keywords: ["burn", "burned", "burnt", "hot", "stove", "oven", "iron", "blister", "scald"],
+  start: "serious",
+  nodes: {
+    serious: { t: "ask", text: "Does any of this fit?",
+      more: ["Bigger than 3 inches across, about the width of your palm",
+             "The skin looks white, brown, black, leathery or charred",
+             "It goes all the way around an arm, leg or finger",
+             "It's from electricity or a chemical"],
+      opts: [ { label: "Yes", next: "sos" }, { label: "No", next: "where" } ] },
+    sos: { t: "end", danger: true, level: "911", text: "Call 911, or have someone take you to the emergency room.",
+      more: ["Don't put ice, butter or cream on it.",
+             "Take off rings or anything tight near it, unless it's stuck.",
+             "Cover it loosely with a clean cloth.",
+             "Let someone on your list know."],
+      call: ["911", "come"] },
+    where: { t: "ask", text: "Is it on your face, hands, feet or a joint, or is it blistering a lot?",
+      opts: [ { label: "Yes", next: "coolB" }, { label: "No", next: "coolA" } ] },
+    coolA: { t: "step", text: "Run cool water, not cold, over it for about 10 minutes.",
+      more: ["No ice, butter, toothpaste or oil."],
+      calm: "Cool water is doing the work. Just keep it there.",
+      why: "Cooling stops the burn from going deeper and eases the pain. Ice is too cold and can hurt the skin.",
+      next: "ringsA" },
+    ringsA: { t: "step", text: "Take off rings or anything tight near the burn.",
+      more: ["Burns swell, and that makes it harder later."], next: "coverA" },
+    coverA: { t: "step", text: "Cover it loosely with a clean bandage.",
+      more: ["Don't pop any blisters. They protect the skin underneath.",
+             "A pain reliever like Tylenol or Advil can help. Follow the label."],
+      home: "first_aid", next: "watchA" },
+    watchA: { t: "end", level: "self", text: "Keep an eye on it.",
+      more: ["Redder, more swollen, leaking or more painful after a day or two? Call the doctor's office.",
+             "Let someone at home know, so they can take a look."],
+      call: ["doctor", "people"] },
+    coolB: { t: "step", text: "Cool it first: cool water, not cold, for about 10 minutes.",
+      more: ["On your face? Use a cool, wet cloth instead.", "No ice, butter, toothpaste or oil."],
+      calm: "Cool water is doing the work. Just keep it there.",
+      next: "coverB" },
+    coverB: { t: "step", text: "Take off anything tight nearby, and cover it loosely with a clean bandage.",
+      more: ["Don't pop any blisters."], home: "first_aid", next: "checkB" },
+    checkB: { t: "end", level: "doctor", text: "Get it checked today, at the doctor's office or urgent care.",
+      more: ["Burns on the face, hands, feet or joints, or with big blisters, should be looked at.",
+             "Let someone on your list know. They can help you get there."],
+      call: ["doctor", "urgentcare", "people"] }
+  },
+  practice: [
+    { q: "You brush your arm against a hot oven rack. The spot is small, red and stings. What do you do first?",
+      choices: [
+        { text: "Run cool water over it for about 10 minutes", r: "right", fb: "Yes. Cool water stops the burn from going deeper." },
+        { text: "Put ice on it", r: "not", fb: "Ice is too cold and can hurt the skin more. Use cool running water." },
+        { text: "Put butter on it", r: "not", fb: "Butter holds the heat in. Cool running water instead." },
+        { text: "Cover it with a bandage", r: "notfirst", fb: "Cool it first for about 10 minutes, then cover it loosely." }
+      ] },
+    { q: "A small burn has formed a blister. What do you do with it?",
+      choices: [
+        { text: "Leave it alone and cover it loosely", r: "right", fb: "Yes. The blister protects the skin underneath." },
+        { text: "Pop it so it heals faster", r: "not", fb: "Popping it lets germs in. Leave it and cover it loosely." }
+      ] }
+  ]
+},
+
+/* ============================== H4. Head ============================== */
+{
+  id: "head", title: "Fell or hit my head", group: "health", icon: "head",
+  keywords: ["head", "fell", "fall", "bump", "concussion", "hit", "dizzy", "headache"],
+  start: "sos",
+  nodes: {
+    sos: { t: "ask", text: "Is any of this happening?",
+      more: ["You passed out, even for a few seconds",
+             "Bleeding a lot from the head, or blood or fluid from the nose or ears",
+             "Confusion that's getting worse, or slurred speech",
+             "Can't keep your balance, or an arm or leg is weak",
+             "A seizure",
+             "It was a big fall, like from a ladder or down stairs, or a car crash"],
+      opts: [ { label: "Yes", next: "call" }, { label: "No", next: "signs" } ] },
+    call: { t: "end", danger: true, level: "911", text: "Call 911. Stay still until help comes.",
+      more: ["Try not to move around.", "Then let someone on your list know."],
+      call: ["911", "people"] },
+    signs: { t: "ask", text: "Do you have any of these?",
+      more: ["A headache that won't go away",
+             "Feeling sick, or throwing up",
+             "Blurry vision, or ringing in your ears",
+             "Dizzy, or trouble concentrating or remembering"],
+      opts: [ { label: "Yes", next: "seen" }, { label: "No", next: "rest" } ] },
+    seen: { t: "end", level: "doctor", text: "Get checked today.",
+      more: ["Call the doctor's office, or go to urgent care.",
+             "Don't drive yourself. Ask someone on your list to take you."],
+      call: ["doctor", "urgentcare", "come"] },
+    rest: { t: "step", text: "Sit down and rest for a while.",
+      more: ["Hold something cold, wrapped in a cloth, on any bump, for 15 to 20 minutes."],
+      calm: "A bump without those signs is usually fine. Resting is the right thing.",
+      next: "tell" },
+    tell: { t: "end", level: "self", text: "Let someone at home know you hit your head.",
+      more: ["Ask them to check on you over the next day.",
+             "If a headache gets worse, you throw up, or you feel confused or very sleepy, get checked right away."],
+      call: ["people"] }
+  },
+  practice: [
+    { q: "You bump your head on a cabinet. An hour later you throw up, and your headache is getting worse. What do you do?",
+      choices: [
+        { text: "Get checked today, and have someone take me", r: "right", fb: "Yes. Throwing up and a worsening headache after a bump should be checked." },
+        { text: "Sleep it off", r: "not", fb: "Those are signs to get checked today. Let someone on your list know and go." },
+        { text: "Drive myself to urgent care", r: "not", fb: "Don't drive after a head injury with symptoms. Ask someone to take you." }
+      ] }
+  ]
+},
+
+/* ============================== H5. Sprain ============================== */
+{
+  id: "sprain", title: "Twisted ankle or wrist", group: "health", icon: "foot",
+  keywords: ["sprain", "twisted", "ankle", "wrist", "knee", "swollen", "ice", "rolled"],
+  start: "serious",
+  nodes: {
+    serious: { t: "ask", text: "Does any of this fit?",
+      more: ["You can't put any weight on it, or can't use it at all",
+             "It feels numb or wobbly",
+             "The pain is right on the bone",
+             "It looks bent or out of shape"],
+      opts: [ { label: "Yes", next: "seen" }, { label: "No", next: "rest" } ] },
+    seen: { t: "end", level: "doctor", text: "Get it checked today at urgent care.",
+      more: ["Try not to walk on it or use it.", "Ask someone on your list to take you."],
+      call: ["urgentcare", "come"] },
+    rest: { t: "step", text: "Rest it. Stay off it as much as you can.",
+      calm: "Sprains hurt, but they heal. Resting is the first part of the fix.",
+      next: "ice" },
+    ice: { t: "step", text: "Put ice on it for 15 to 20 minutes.",
+      more: ["Wrap the ice in a thin towel first, never right on your skin.",
+             "Do it a few times a day for the first 2 days."],
+      next: "wrap" },
+    wrap: { t: "step", text: "Wrap it with an elastic bandage, snug but not tight.",
+      more: ["If your toes or fingers tingle or turn pale, loosen it."],
+      home: "first_aid", next: "raise" },
+    raise: { t: "step", text: "Keep it raised, above your heart if you can.",
+      more: ["Prop it up on pillows."], next: "end" },
+    end: { t: "end", level: "self", text: "Give it a few days.",
+      more: ["Not better after 2 or 3 days? Call the doctor's office.",
+             "Let someone at home know, so they can help."],
+      call: ["doctor", "people"] }
+  },
+  practice: [
+    { q: "You twist your ankle stepping off a curb. You can walk on it, but it's sore and puffy. What do you do?",
+      choices: [
+        { text: "Rest it, ice it for 15 to 20 minutes, wrap it, and raise it", r: "right", fb: "Yes. Rest, ice, wrap, raise." },
+        { text: "Keep walking to work it out", r: "not", fb: "Walking on it can make it worse. Rest it first." },
+        { text: "Keep ice on it for an hour", r: "not", fb: "No more than 20 minutes at a time, with a towel between the ice and your skin." }
+      ] },
+    { q: "You can't put any weight on your ankle at all. What do you do?",
+      choices: [
+        { text: "Get it checked today at urgent care", r: "right", fb: "Yes. Not being able to stand on it needs a doctor." },
+        { text: "Wait a few days and see", r: "not", fb: "If you can't put any weight on it, get it checked today." }
+      ] }
+  ]
+},
+
+/* ============================== H6. Nosebleed ============================== */
+{
+  id: "nosebleed", title: "Nosebleed", group: "health", icon: "nose",
+  keywords: ["nose", "nosebleed", "bleeding", "blood"],
+  start: "cause",
+  nodes: {
+    cause: { t: "ask", text: "Did it start after a fall or a hit to the face, or do you feel faint?",
+      opts: [ { label: "Yes", next: "er" }, { label: "No", next: "sit" } ] },
+    sit: { t: "step", text: "Sit up and lean forward.",
+      more: ["Not back. Leaning back makes blood run down your throat."],
+      calm: "Nosebleeds look like a lot of blood, but they're rarely serious.",
+      next: "pinch" },
+    pinch: { t: "step", text: "Pinch the soft part of your nose shut and breathe through your mouth.",
+      more: ["Keep pinching for 10 to 15 minutes.", "Don't let go to check."],
+      why: "Steady pressure lets it clot. Letting go to peek starts it again.",
+      next: "q1" },
+    q1: { t: "ask", text: "Has it stopped?",
+      opts: [ { label: "Yes", next: "after" }, { label: "No", next: "again" } ] },
+    again: { t: "step", text: "Pinch again for another 15 minutes.", next: "q2" },
+    q2: { t: "ask", text: "Has it stopped now?",
+      opts: [ { label: "Yes", next: "after" }, { label: "No", next: "er" } ] },
+    er: { t: "end", danger: true, level: "911", text: "Go to the emergency room, or call 911.",
+      more: ["Keep pinching on the way.",
+             "Don't drive yourself. Ask someone on your list, or call 911 if you feel faint."],
+      call: ["come", "911"] },
+    after: { t: "end", level: "self", text: "Take it easy for a few hours.",
+      more: ["Don't blow or pick your nose, and don't bend over or lift heavy things.",
+             "Getting nosebleeds often? Mention it to the doctor.",
+             "Let someone at home know if it took a long time to stop."] }
+  },
+  practice: [
+    { q: "Your nose starts bleeding while you're watching TV. What do you do?",
+      choices: [
+        { text: "Sit up, lean forward, and pinch my nose for 10 to 15 minutes", r: "right", fb: "Yes. Lean forward, pinch, and don't let go to check." },
+        { text: "Tip my head back", r: "not", fb: "That sends blood down your throat. Lean forward instead." },
+        { text: "Let go every minute to see if it's stopped", r: "not", fb: "Peeking starts it again. Hold for the full 10 to 15 minutes." }
+      ] }
+  ]
+},
+
+/* ============================== H7. Sting or allergic reaction ============================== */
+{
+  id: "sting", title: "Bee sting or allergic reaction", group: "health", icon: "bee",
+  keywords: ["bee", "sting", "wasp", "allergic", "allergy", "swelling", "hives", "epipen", "bug", "bite"],
+  start: "signs",
+  nodes: {
+    signs: { t: "ask", text: "Is any of this happening?",
+      more: ["Trouble breathing",
+             "Swelling of the lips, face, eyelids or throat",
+             "Dizzy or faint",
+             "Hives spreading over your body",
+             "Feeling sick to your stomach, or throwing up"],
+      calm: "If you're not sure, choose yes.",
+      opts: [ { label: "Yes", next: "sos" }, { label: "No, just a sore spot", next: "move" } ] },
+    sos: { t: "step", danger: true, text: "Call 911 now.",
+      more: ["If you have an EpiPen, use it now, the way you were shown.",
+             "Loosen tight clothes. Don't drink anything."],
+      call: ["911", "mednote"],
+      calm: "Calling is exactly right. Help is on the way.",
+      next: "sosend" },
+    sosend: { t: "end", danger: true, level: "911", text: "Stay where you are until help comes. Then let someone on your list know.",
+      call: ["people"] },
+    move: { t: "step", text: "Move away from the bugs. Then get the stinger out.",
+      more: ["Scrape it out sideways with a fingernail or the edge of a card."], next: "wash" },
+    wash: { t: "step", text: "Wash it with soap and water.", next: "cold" },
+    cold: { t: "step", text: "Hold something cold on it for 10 to 20 minutes.",
+      more: ["Ice wrapped in a cloth, or a cold, wet cloth.", "On an arm or leg? Raise it."], next: "end" },
+    end: { t: "end", level: "self", text: "Ease the itch and keep an eye on it.",
+      more: ["Hydrocortisone cream or calamine lotion helps the itch.",
+             "Swelling getting bigger, signs of infection, or feeling unwell? Call the doctor's office.",
+             "Trouble breathing or swelling in your face later? Call 911."],
+      call: ["doctor"] }
+  },
+  practice: [
+    { q: "A bee stings you. A few minutes later your lips start to swell. What do you do?",
+      choices: [
+        { text: "Call 911 now", r: "right", fb: "Yes. Swelling of the lips or face can be a serious allergic reaction." },
+        { text: "Wait and see if it goes down", r: "never", fb: "Swelling of the lips or face can affect breathing. Call 911 right away." },
+        { text: "Put ice on the sting and lie down", r: "not", fb: "With swelling of the lips, call 911 first." }
+      ] },
+    { q: "A bee stings your arm. It's red and sore, and that's all. What do you do?",
+      choices: [
+        { text: "Get the stinger out, wash it, and hold something cold on it", r: "right", fb: "Yes. That's all a normal sting needs." },
+        { text: "Call 911", r: "not", fb: "A sore red spot is a normal sting. Call 911 only for warning signs like trouble breathing or swelling of the face." }
+      ] }
+  ]
+},
+
+/* ============================== H8. I feel sick ============================== */
+{
+  id: "sick", title: "I feel sick", group: "health", icon: "thermo",
+  keywords: ["sick", "fever", "flu", "stomach", "vomit", "throwing up", "diarrhea", "temperature", "cold", "ill"],
+  start: "sos",
+  nodes: {
+    sos: { t: "ask", text: "Is any of this happening?",
+      more: ["Trouble breathing", "Chest pain or pressure", "Confusion, or very hard to stay awake",
+             "Throwing up blood", "A seizure"],
+      opts: [ { label: "Yes", next: "call" }, { label: "No", next: "doc" } ] },
+    call: { t: "end", danger: true, level: "911", text: "Call 911 now.",
+      more: ["If you have a medical note in My info, show it to the paramedics.",
+             "Then let someone on your list know."],
+      call: ["911", "mednote", "people"] },
+    doc: { t: "ask", text: "Does any of this fit?",
+      more: ["A fever above 104°F",
+             "A bad headache with a stiff neck, or a new rash",
+             "Bad stomach pain",
+             "You can't keep liquids down for 24 hours",
+             "Throwing up or diarrhea for more than 2 days",
+             "Very thirsty, dry mouth, dark or very little pee, or dizzy",
+             "Blood in your poop",
+             "Pain when you pee"],
+      opts: [ { label: "Yes", next: "docend" }, { label: "No", next: "rest" } ] },
+    docend: { t: "end", level: "doctor", text: "Call the doctor's office today.",
+      more: ["If they're closed, go to urgent care.",
+             "Let someone on your list know. They can help you get there."],
+      call: ["doctor", "urgentcare", "people"] },
+    rest: { t: "step", text: "Rest, and drink plenty of fluids.",
+      more: ["Upset stomach? Small sips, often. Water or a sports drink.",
+             "Wear light clothes. Use a light blanket if you have chills."],
+      calm: "Most bugs pass in a few days. Rest is the medicine.",
+      next: "temp" },
+    temp: { t: "step", text: "If you have a thermometer, take your temperature.",
+      more: ["100.4°F or higher is a fever.", "Above 104°F, call the doctor's office."], next: "meds" },
+    meds: { t: "step", text: "A fever reducer like Tylenol or Advil can help.",
+      more: ["Follow the dose on the label.",
+             "If you take other medicines, ask the doctor or a pharmacist first."],
+      next: "end" },
+    end: { t: "end", level: "self", text: "Rest, and check how you feel.",
+      more: ["Let someone at home know you're not feeling well.",
+             "If a warning sign shows up, or you're not getting better, call the doctor's office."],
+      call: ["people", "doctor"] }
+  },
+  practice: [
+    { q: "You have a stomach bug and haven't kept any water down since yesterday. What do you do?",
+      choices: [
+        { text: "Call the doctor's office today", r: "right", fb: "Yes. Not keeping liquids down for 24 hours can make you dehydrated." },
+        { text: "Keep waiting it out", r: "not", fb: "After 24 hours without keeping liquids down, call the doctor's office." },
+        { text: "Call 911", r: "not", fb: "Call 911 for things like trouble breathing, confusion or throwing up blood. For this, call the doctor's office." }
+      ] },
+    { q: "You have a fever of 100.8°F and feel achy, with no other warning signs. What do you do?",
+      choices: [
+        { text: "Rest, drink fluids, and let someone at home know", r: "right", fb: "Yes. Watch for warning signs, and call the doctor if they show up." },
+        { text: "Go to the emergency room", r: "not", fb: "A mild fever on its own can be looked after at home. Watch for warning signs." }
+      ] }
+  ]
+},
+
+/* ============================== H9. When to let someone know ============================== */
+{
+  id: "tell-someone", title: "When to let someone know", group: "health", icon: "people",
+  keywords: ["tell", "let someone know", "family", "help", "hurt", "sick", "mom", "dad"],
+  start: "list",
+  nodes: {
+    list: { t: "end", text: "Let someone on your list know when:",
+      more: ["You called 911, or went to urgent care or the emergency room",
+             "You need to see a doctor, or need someone to drive you",
+             "You hit your head",
+             "It still hurts, or it's worse, the next day",
+             "You took medicine and aren't sure it was right",
+             "You're not sure what to do. That's always a good reason."],
+      calm: "Telling someone isn't making a fuss. It's how you make sure you're looked after.",
+      call: ["people"] }
+  },
+  practice: [
+    { q: "You treated a twisted ankle yourself. The next morning it's more swollen and hurts more. What do you do?",
+      choices: [
+        { text: "Let someone on my list know, and call the doctor's office", r: "right", fb: "Yes. Worse the next day is a reason to tell someone and get it checked." },
+        { text: "Keep it to myself and wait", r: "not", fb: "Getting worse is a good reason to let someone know." }
+      ] },
+    { q: "You feel sick, but you're not sure it's bad enough to mention. What do you do?",
+      choices: [
+        { text: "Let someone know anyway", r: "right", fb: "Yes. Not being sure is a good reason to tell someone." },
+        { text: "Don't bother anyone", r: "not", fb: "You're not bothering anyone. Telling them is how they help." }
       ] }
   ]
 }

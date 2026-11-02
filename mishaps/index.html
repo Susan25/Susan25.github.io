@@ -204,6 +204,8 @@ input:focus-visible,button:focus-visible,a:focus-visible,textarea:focus-visible,
 .stepcard.danger{ border-left:6px solid var(--warn); }
 .stepcard .count{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
 .stepcard.danger .count{ color:var(--warn); }
+.count.lv-self{ color:var(--ok); }
+.count.lv-doctor{ color:var(--signal); }
 .steptext{ font-family:"Archivo",sans-serif; font-weight:700; font-size:clamp(23px,6.4vw,28px); line-height:1.2; letter-spacing:-.01em; margin:0; text-wrap:pretty; }
 .more{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px; }
 .more li{ position:relative; padding-left:20px; font-size:17px; line-height:1.45; }
@@ -455,6 +457,23 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     </section>
 
     <section class="card">
+      <div>
+        <h2>Health</h2>
+        <p class="sub">Used by the Health and wellness steps.</p>
+      </div>
+      <div class="field"><span class="flabel">Doctor&rsquo;s office</span>
+        <input type="text" id="h-docname" placeholder="Name, like &ldquo;Dr. Lee&rsquo;s office&rdquo;" autocomplete="off">
+        <input type="tel" id="h-docphone" placeholder="Phone number" inputmode="tel" autocomplete="off"></div>
+      <div class="field"><span class="flabel">Urgent care</span>
+        <input type="text" id="h-ucname" placeholder="Name" autocomplete="off">
+        <input type="tel" id="h-ucphone" placeholder="Phone number" inputmode="tel" autocomplete="off">
+        <input type="text" id="h-ucaddr" placeholder="Address, for directions" autocomplete="off"></div>
+      <div class="field"><span class="flabel">Medical note <span style="text-transform:none;letter-spacing:0;font-family:'IBM Plex Sans',sans-serif;font-weight:400">(optional)</span></span>
+        <textarea id="h-note" placeholder="Allergies, medicines you take, anything a doctor or paramedic should know"></textarea>
+        <p class="note">Shows up in the 911 steps, so you can show it to a paramedic. It stays on this phone.</p></div>
+    </section>
+
+    <section class="card">
       <h2>Keep a copy</h2>
       <p class="sub">Everything here lives only on this phone. Save a copy now and then, so you can get it all back on a new phone.</p>
       <button type="button" class="btn ghost" id="b-save">Save a copy</button>
@@ -508,7 +527,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     <div class="field"><span class="flabel">Phone number</span><input type="tel" id="pe-phone" autocomplete="off" inputmode="tel"></div>
     <label class="check"><input type="checkbox" id="pe-coach"><span>Can talk me through things on the phone</span></label>
     <label class="check"><input type="checkbox" id="pe-come"><span>Can come to help</span></label>
-    <div class="field"><span class="flabel">Note <span style="text-transform:none;letter-spacing:0;font-family:'IBM Plex Sans';font-weight:400">(optional)</span></span><input type="text" id="pe-note" placeholder="Like &ldquo;about 30 minutes away&rdquo;" autocomplete="off"></div>
+    <div class="field"><span class="flabel">Note <span style="text-transform:none;letter-spacing:0;font-family:'IBM Plex Sans',sans-serif;font-weight:400">(optional)</span></span><input type="text" id="pe-note" placeholder="Like &ldquo;about 30 minutes away&rdquo;" autocomplete="off"></div>
     <div class="btn-row">
       <button type="button" class="btn ghost" id="pe-del">Remove</button>
       <button type="button" class="btn" id="pe-save">Save</button>
@@ -592,6 +611,15 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     car:'<path d="M4 16.5v-4.3L6 7.4A2 2 0 0 1 7.9 6h8.2a2 2 0 0 1 1.9 1.4l2 4.8v4.3z"/><path d="M4 12.2h16"/><circle cx="7.6" cy="16.6" r="1.9"/><circle cx="16.4" cy="16.6" r="1.9"/>',
     plate:'<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 12h2M11 12h2M15 12h2"/>',
     breath:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/>',
+    aid:'<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/>',
+    bandage:'<rect x="2.8" y="8.2" width="18.4" height="7.6" rx="3.8" transform="rotate(-35 12 12)"/><rect x="8.6" y="9.6" width="6.8" height="4.8" rx="1" transform="rotate(-35 12 12)"/>',
+    burn:'<path d="M12 3.5c2 2.4 4 4.5 4 7.4a4 4 0 0 1-8 0c0-2.9 2-5 4-7.4z"/><path d="M5 18.5c1.2-1 2.3-1 3.5 0s2.3 1 3.5 0 2.3-1 3.5 0 2.3 1 3.5 0"/>',
+    head:'<path d="M7 20v-3.2A6.5 6.5 0 1 1 17.5 13l1.5 2.6h-2V19a1.5 1.5 0 0 1-1.5 1.5H13V20"/><path d="M10.5 6.5 12 9l1.5-2.5"/>',
+    foot:'<path d="M8.5 3.5v9.2c0 .9-.6 1.6-1.4 2.1A3.1 3.1 0 0 0 8.8 20.5H17a2.5 2.5 0 0 0 0-5h-3.5V3.5"/>',
+    nose:'<path d="M12 4c-.6 4.5-3.2 8-3.2 10.8A3.2 3.2 0 0 0 12 18a3.2 3.2 0 0 0 3.2-3.2"/><path d="M16.5 16.5c.8 1.2.8 2.4 0 3.5"/>',
+    bee:'<ellipse cx="12" cy="13.5" rx="4" ry="5.5"/><path d="M8.3 12h7.4M8.3 15.3h7.4"/><path d="M10 8.3C8 5.5 5 5.8 4.5 7.6c-.5 2 2.7 3 5.6 2.2M14 8.3c2-2.8 5-2.5 5.5-.7.5 2-2.7 3-5.6 2.2"/>',
+    thermo:'<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><path d="M12 9v7.5"/>',
+    people:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19.5a5.5 5.5 0 0 1 11 0"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15 14.4a4.6 4.6 0 0 1 5.5 4.6"/>',
     phone:'<path d="M6.5 3.5h3l1.6 4.2-2.1 1.4a11 11 0 0 0 5.9 5.9l1.4-2.1 4.2 1.6v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z"/>',
     camera:'<path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>',
     check:'<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7 5.3-5.6"/>',
@@ -777,6 +805,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
      here still shows up, at the end of its group, so new ones need no change here. */
   var GROUPS = [
     { id:"home",  title:"At home",        order:["smoke-alarm","stove","co-alarm","gas","overflow","toilet","power","locked-out"] },
+    { id:"health", title:"Health and wellness", order:["emergency","cut","burn","head","sprain","nosebleed","sting","sick","tell-someone"] },
     { id:"out",   title:"Out and about",  order:["lost","cant-reach","transit","uber-noshow","uber-match"] },
     { id:"money", title:"Money and messages", order:["card","scam"] }
   ];
@@ -847,6 +876,14 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
      written steps sit next to it in case it ever stops working. */
   var FINDMY = '<a class="btn ghost" href="findmy://">' + svg("pin", 2) + 'See where your people are</a>' +
     '<p class="callnote">Or open Find My, tap People, then tap a name.</p>';
+  /* Urgent care: her saved one (call + Google Maps directions), or a Google Maps search nearby. */
+  function urgentHTML(){
+    var h = "", name = place.ucName || "urgent care";
+    if (digits(place.ucPhone)) h += '<a class="btn ghost" href="tel:' + esc(digits(place.ucPhone)) + '">' + svg("phone", 2) + 'Call ' + esc(name) + '</a>';
+    if (place.ucAddress) h += '<a class="btn ghost" href="https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(place.ucAddress) + '">' + svg("pin", 2) + 'Directions to ' + esc(name) + '</a>';
+    else h += '<a class="btn ghost" href="https://www.google.com/maps/search/urgent+care+near+me">' + svg("pin", 2) + 'Find urgent care nearby</a>';
+    return h;
+  }
   function callsHTML(list){
     if (!list || !list.length) return "";
     var shown = {}, out = [], noPeople = false;
@@ -870,6 +907,14 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
         out.push('<a class="btn ghost" href="' + esc(u) + '">' + svg("car", 2) + 'Open Uber</a>');
       }
       else if (c === "findmy") out.push(FINDMY);
+      else if (c === "doctor"){
+        if (digits(place.doctorPhone)) out.push('<a class="btn" href="tel:' + esc(digits(place.doctorPhone)) + '">' + svg("phone", 2) + 'Call ' + esc(place.doctorName || "the doctor\u2019s office") + '</a>');
+        else out.push('<p class="homehint">Add your doctor\u2019s office number in My info, and a call button shows up here.</p>');
+      }
+      else if (c === "urgentcare") out.push(urgentHTML());
+      else if (c === "mednote"){
+        if (place.medNote) out.push('<div class="locbox"><b>Your medical note</b><span style="white-space:pre-wrap">' + esc(place.medNote) + '</span></div>');
+      }
       else if (c === "whereami") out.push('<button type="button" class="btn" data-loc="show">' + svg("pin", 2) + 'Show where I am</button><div class="locbox hide" data-locout></div>');
       else if (c === "sendloc") out.push('<button type="button" class="btn" data-loc="send">' + svg("pin", 2) + 'Send my location</button><div class="locbox hide" data-locout></div>');
       else if (c === "directions"){
@@ -922,8 +967,13 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
   function drawNode(){
     var n = cur.nodes[node], h = "";
     var count = n.t === "end" ? "Last step" : n.t === "ask" ? "Question" : "Step " + (hist.filter(function(k){ return cur.nodes[k].t === "step"; }).length + 1);
-    if (n.danger) count = "Safety first";
-    h += '<section class="card stepcard' + (n.danger ? " danger" : "") + '"><span class="count">' + count + '</span>';
+    var lvl = "";
+    if (n.level === "self"){ count = "Fix it yourself"; lvl = " lv-self"; }
+    else if (n.level === "doctor"){ count = "Get it checked"; lvl = " lv-doctor"; }
+    if (n.danger) count = n.level === "911" ? "Call 911" : "Safety first";
+    var only = n.t === "end" && !hist.length && node === cur.start;   /* a one-screen reference, not a finished task */
+    if (only) count = "Good to know";
+    h += '<section class="card stepcard' + (n.danger ? " danger" : "") + '"><span class="count' + lvl + '">' + count + '</span>';
     h += '<h2 class="steptext">' + esc(n.text) + '</h2>';
     if (n.more) h += '<ul class="more">' + n.more.map(function(m){ return "<li>" + esc(m) + "</li>"; }).join("") + '</ul>';
     if (n.calm) h += '<div class="calmline">' + esc(n.calm) + '</div>';
@@ -936,7 +986,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     } else if (n.t === "ask"){
       h += '<div class="opts">' + n.opts.map(function(o, i){ return '<button type="button" class="opt" data-opt="' + i + '"><span>' + esc(o.label) + '</span>' + CHEV + '</button>'; }).join("") + '</div>';
     } else {
-      h += '<div class="donebanner">' + svg("check", 2) + 'That’s the last step. You handled it.</div>';
+      if (!only && !n.danger) h += '<div class="donebanner">' + svg("check", 2) + 'That’s the last step. You handled it.</div>';
       h += '<div class="btn-row"><button type="button" class="btn" id="r-home">All mishaps</button><button type="button" class="btn ghost" id="r-prac">Practice this one</button></div>';
     }
     if (hist.length) h += '<button type="button" class="lnk" id="r-back">Go back a step</button>';
@@ -944,7 +994,10 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     fillPhotos(body);
     if ($("r-next")) $("r-next").addEventListener("click", function(){ goto(n.next); });
     Array.prototype.forEach.call(body.querySelectorAll("[data-opt]"), function(b){
-      b.addEventListener("click", function(){ goto(n.opts[+b.getAttribute("data-opt")].next); });
+      b.addEventListener("click", function(){
+        var o = n.opts[+b.getAttribute("data-opt")];
+        if (o.run) openRun(o.run); else goto(o.next);
+      });
     });
     if ($("r-back")) $("r-back").addEventListener("click", back);
     if ($("r-home")) $("r-home").addEventListener("click", function(){ screen("main"); });
@@ -957,6 +1010,8 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     if (calm){ ppl = ppl.filter(function(p){ return p.coach; }).concat(ppl.filter(function(p){ return !p.coach; })); }
     h += ppl.length ? ppl.map(function(p){ return personBtns(p, "call"); }).join("") : '<p class="note spot">No numbers yet. Add them in <b>My info</b>.</p>';
     h += FINDMY;
+    if (digits(place.doctorPhone)) h += '<a class="btn ghost" href="tel:' + esc(digits(place.doctorPhone)) + '">Call ' + esc(place.doctorName || "the doctor\u2019s office") + '</a>';
+    if (digits(place.ucPhone)) h += '<a class="btn ghost" href="tel:' + esc(digits(place.ucPhone)) + '">Call ' + esc(place.ucName || "urgent care") + '</a>';
     h += SERVICES.map(function(s){ return '<a class="btn ghost" href="tel:' + digits(s.phone) + '">Call ' + esc(s.name) + '</a>'; }).join("");
     h += '<a class="btn sos" href="tel:911">' + svg("phone", 2) + 'Call 911</a>';
     $("cs-list").innerHTML = h;
@@ -1218,10 +1273,15 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
   function drawInfo(){
     drawPeople(); drawHome();
     $("addr").value = place.address || "";
+    HFIELDS.forEach(function(f){ $(f[0]).value = place[f[1]] || ""; });
     $("services").innerHTML = SERVICES.map(function(s){ return '<div class="svc"><span>' + esc(s.name) + '</span><a href="tel:' + digits(s.phone) + '">' + esc(s.phone) + '</a></div>'; }).join("") +
       '<div class="svc"><span>Bank card</span><span class="sub" style="margin:0">On the back of your card</span></div>';
   }
   $("addr").addEventListener("change", function(){ place.address = this.value.trim().slice(0, 160); save("mh_place", place); toast("Address saved."); });
+  var HFIELDS = [["h-docname","doctorName",60],["h-docphone","doctorPhone",30],["h-ucname","ucName",60],["h-ucphone","ucPhone",30],["h-ucaddr","ucAddress",160],["h-note","medNote",600]];
+  HFIELDS.forEach(function(f){
+    $(f[0]).addEventListener("change", function(){ place[f[1]] = this.value.trim().slice(0, f[2]); save("mh_place", place); toast("Saved."); });
+  });
 
   /* ================= keep a copy ================= */
   function blobToData(b){ return new Promise(function(res){ var r = new FileReader(); r.onload = function(){ res(r.result); }; r.readAsDataURL(b); }); }
@@ -1273,6 +1333,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     homeInfo = {};
     Object.keys(d.home || {}).forEach(function(k){ if (ITEM[k]){ var x = d.home[k]; homeInfo[k] = { note:String(x.note || "").slice(0, 200), tried:!!x.tried, known:!!x.known }; } });
     place = { address:String((d.place && d.place.address) || "").slice(0, 160) };
+    HFIELDS.forEach(function(f){ place[f[1]] = String((d.place && d.place[f[1]]) || "").slice(0, f[2]); });
     practice = (d.practice && typeof d.practice === "object") ? d.practice : {};
     Object.keys(urlCache).forEach(forgetURL);
     clearPhotos().catch(function(){}).then(function(){
