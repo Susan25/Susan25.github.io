@@ -252,8 +252,7 @@ body.calm .homehint{ display:none; }
 }
 .callbar .in{ max-width:600px; margin:0 auto; display:flex; gap:9px; }
 .callbar .btn{ min-height:52px; }
-.callbar .btn:first-child{ flex:2 1 0; }
-.callbar .btn:last-child{ flex:1 1 0; }
+.callbar .btn{ flex:1 1 0; }
 body.calm .callbar .btn{ min-height:64px; font-size:18px; }
 .wrap.run{ padding-bottom:130px; }
 
@@ -507,7 +506,6 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
 <div class="callbar hide" id="callbar">
   <div class="in">
     <button type="button" class="btn" id="cb-call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h3l1.6 4.2-2.1 1.4a11 11 0 0 0 5.9 5.9l1.4-2.1 4.2 1.6v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z"/></svg>Call someone</button>
-    <a class="btn sosline" href="tel:911" id="cb-911">911</a>
   </div>
 </div>
 
@@ -884,6 +882,16 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     else h += '<a class="btn ghost" href="https://www.google.com/maps/search/urgent+care+near+me">' + svg("pin", 2) + 'Find urgent care nearby</a>';
     return h;
   }
+  /* One text to everyone on her list, so family knows right away that she needs help.
+     On iPhone, sms://open?addresses=a,b opens a group message with the words typed in. */
+  function alertHTML(){
+    var nums = callable().map(function(p){ return digits(p.phone); });
+    if (!nums.length) return "";
+    var body = encodeURIComponent("I need help right now. Please call me.");
+    var href = nums.length === 1 ? "sms:" + nums[0] + "&body=" + body : "sms://open?addresses=" + nums.join(",") + "&body=" + body;
+    return '<a class="btn sosline" href="' + esc(href) + '">Text everyone: \u201cI need help\u201d</a>' +
+      '<p class="callnote">One text to everyone on your list.</p>';
+  }
   function callsHTML(list){
     if (!list || !list.length) return "";
     var shown = {}, out = [], noPeople = false;
@@ -912,6 +920,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
         else out.push('<p class="homehint">Add your doctor\u2019s office number in My info, and a call button shows up here.</p>');
       }
       else if (c === "urgentcare") out.push(urgentHTML());
+      else if (c === "alert") out.push(alertHTML());
       else if (c === "mednote"){
         if (place.medNote) out.push('<div class="locbox"><b>Your medical note</b><span style="white-space:pre-wrap">' + esc(place.medNote) + '</span></div>');
       }
@@ -1013,7 +1022,6 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
     if (digits(place.doctorPhone)) h += '<a class="btn ghost" href="tel:' + esc(digits(place.doctorPhone)) + '">Call ' + esc(place.doctorName || "the doctor\u2019s office") + '</a>';
     if (digits(place.ucPhone)) h += '<a class="btn ghost" href="tel:' + esc(digits(place.ucPhone)) + '">Call ' + esc(place.ucName || "urgent care") + '</a>';
     h += SERVICES.map(function(s){ return '<a class="btn ghost" href="tel:' + digits(s.phone) + '">Call ' + esc(s.name) + '</a>'; }).join("");
-    h += '<a class="btn sos" href="tel:911">' + svg("phone", 2) + 'Call 911</a>';
     $("cs-list").innerHTML = h;
     $("callsheet").showModal();
   }
@@ -1350,7 +1358,7 @@ dialog.sheet::backdrop{ background:rgba(10,18,17,.55); }
   /* ================= how it works ================= */
   var GUIDE = [
     ["home", "Pick what’s happening", "On <b>Help now</b>, tap the mishap. The app shows one step at a time. Tap <b>Done</b> to see the next one, or answer the question with the buttons."],
-    ["phone", "Help is always one tap away", "While a mishap is open, the bar at the bottom has <b>Call someone</b> and <b>911</b>. The people come from <b>My info</b>, in the order you set."],
+    ["phone", "Help is always one tap away", "While a mishap is open, the bar at the bottom has <b>Call someone</b>. The people come from <b>My info</b>, in the order you set. For a real emergency, the steps tell you to get someone first, and show 911 only if you can\u2019t reach anyone."],
     ["breath", "When it’s a lot", "Tap <b>I’m really anxious</b>. You get three slow breaths, then the same steps with a few extra words of support. It stays on until you turn it off."],
     ["book", "Practice when it’s calm", "On <b>Practice</b>, pick what you’d do in each situation. You see why it works, or what works better. Your results stay on this phone unless you share them."],
     ["camera", "Set up My info", "Add phone numbers, then tap <b>Walk through my home</b> to take photos of things like the water shutoff. Your photos show up right inside the steps."],

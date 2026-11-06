@@ -21,7 +21,8 @@
      call    buttons to show: "911", "people" (her list, in order), "coach",
              "come", "novec", "gas", "uber", "whereami", "sendloc", "directions",
              "findmy" (opens the Find My app), "doctor", "urgentcare",
-             "mednote" (shows her medical note from My info)
+             "mednote" (shows her medical note from My info),
+             "alert" (one text to all her people: "I'm calling 911")
      danger  true for get-out / call-911 steps (stronger styling)
      level   on health end screens: "self", "doctor" or "911" (shown as a label)
 
@@ -67,7 +68,7 @@ var SCENARIOS = [
       next: "call911" },
     call911: { t: "step", danger: true, text: "Once you're outside, call 911.",
       more: ["Say: “There's a fire at my house and I'm outside.”", "Then call someone on your list."],
-      call: ["911", "people"],
+      call: ["911", "alert", "people"],
       calm: "You did exactly the right thing. Firefighters handle the rest.",
       next: "stayout" },
     stayout: { t: "end", text: "Stay outside until firefighters say it's safe.",
@@ -150,7 +151,7 @@ var SCENARIOS = [
       next: "call911" },
     call911: { t: "step", danger: true, text: "Once you're outside, call 911.",
       more: ["Then call someone on your list."],
-      call: ["911", "people"], next: "stayout" },
+      call: ["911", "alert", "people"], next: "stayout" },
     stayout: { t: "end", text: "Stay outside until firefighters say it's safe." },
     fireend: { t: "end", text: "The fire is out.",
       more: ["Let someone at home know, even if it was small, so the stove gets checked."],
@@ -315,7 +316,7 @@ var SCENARIOS = [
     roomend: { t: "end", text: "Power's back.", more: ["Plug things back in one at a time."] },
     roomhelp: { t: "end", text: "Leave it off and call someone on your list.",
       more: ["Smell burning? Get out and call 911."],
-      call: ["people", "911"] }
+      call: ["people", "911", "alert"] }
   },
   practice: [
     { q: "The lights go out in your bedroom, but the hallway lights still work. What do you do?",
@@ -599,7 +600,7 @@ var SCENARIOS = [
       more: ["Say: “Our carbon monoxide alarm is going off and I'm outside.”",
              "Tell them if you have a headache, feel dizzy, or feel sick.",
              "Then call someone on your list."],
-      call: ["911", "people"],
+      call: ["911", "alert", "people"],
       calm: "Fresh air fixes it. You're doing exactly the right thing.",
       next: "stay" },
     stay: { t: "end", text: "Stay outside, even if the alarm stops.",
@@ -642,7 +643,7 @@ var SCENARIOS = [
     away: { t: "step", text: "Walk away from the smell.", next: "call" },
     call: { t: "step", danger: true, text: "Now call 911, then Washington Gas.",
       more: ["For Washington Gas, choose option 1 for a leak."],
-      call: ["911", "gas"],
+      call: ["911", "alert", "gas"],
       calm: "You're safe out here. Now the calls.",
       next: "people" },
     people: { t: "step", text: "Then call someone on your list.", call: ["people"], next: "end" },
@@ -727,7 +728,7 @@ var SCENARIOS = [
       more: ["Report the mismatch in the app later."], call: ["uber"], next: "end" },
     end: { t: "end", text: "If anyone pressures you to get in, or follows you:",
       more: ["Go into a busy store and call 911. The Uber app has an emergency button too."],
-      call: ["911"] }
+      call: ["911", "alert"] }
   },
   practice: [
     { q: "A car pulls up and the driver asks, “Are you Sam?” Your name isn't Sam, but the car color is right. What do you do?",
@@ -773,7 +774,7 @@ var SCENARIOS = [
       calm: "That's what the list is for. Someone will pick up." },
     sos: { t: "end", danger: true, text: "Call 911.",
       more: ["Then keep trying your people, or text them what's happening."],
-      call: ["911"] }
+      call: ["911", "alert"] }
   },
   practice: [
     { q: "You've called twice and nobody on your list is answering. It isn't urgent. What do you do?",
@@ -821,7 +822,7 @@ var SCENARIOS = [
       more: ["Say what's happening and where you are.",
              "Stay on the phone and do what they tell you.",
              "If you have a medical note in My info, show it to the paramedics."],
-      call: ["911", "mednote"],
+      call: ["911", "alert", "mednote"],
       calm: "Calling is exactly right. They'll talk you through it.",
       next: "tell" },
     tell: { t: "end", danger: true, level: "911", text: "Then let someone on your list know.",
@@ -875,7 +876,7 @@ var SCENARIOS = [
       next: "press" },
     sos: { t: "end", danger: true, level: "911", text: "Call 911. Keep pressing hard on the cut.",
       more: ["Use a cloth or towel, and don't lift it to look.", "Then let someone on your list know."],
-      call: ["911", "people"] },
+      call: ["911", "alert", "people"] },
     press: { t: "step", text: "Press on it with a clean cloth or bandage.",
       more: ["Raise it above your heart if you can.", "Keep pressing for 10 minutes without lifting to check."],
       calm: "Most cuts look worse than they are. Pressing is all it needs right now.",
@@ -953,7 +954,7 @@ var SCENARIOS = [
              "Take off rings or anything tight near it, unless it's stuck.",
              "Cover it loosely with a clean cloth.",
              "Let someone on your list know."],
-      call: ["911", "come"] },
+      call: ["911", "alert", "come"] },
     where: { t: "ask", text: "Is it on your face, hands, feet or a joint, or is it blistering a lot?",
       opts: [ { label: "Yes", next: "coolB" }, { label: "No", next: "coolA" } ] },
     coolA: { t: "step", text: "Run cool water, not cold, over it for about 10 minutes.",
@@ -1021,7 +1022,7 @@ var SCENARIOS = [
       next: "signs" },
     call: { t: "end", danger: true, level: "911", text: "Call 911. Stay still until help comes.",
       more: ["Try not to move around.", "Then let someone on your list know."],
-      call: ["911", "people"] },
+      call: ["911", "alert", "people"] },
     signs: { t: "ask", text: "Do you have any of these?",
       more: ["A headache that won't go away",
              "Feeling sick, or throwing up",
@@ -1135,7 +1136,7 @@ var SCENARIOS = [
     er: { t: "end", danger: true, level: "911", text: "Go to the emergency room, or call 911.",
       more: ["Keep pinching on the way.",
              "Don't drive yourself. Ask someone on your list, or call 911 if you feel faint."],
-      call: ["come", "911"] },
+      call: ["come", "911", "alert"] },
     after: { t: "end", level: "self", text: "Take it easy for a few hours.",
       more: ["Don't blow or pick your nose, and don't bend over or lift heavy things.",
              "Getting nosebleeds often? Mention it to the doctor."] }
@@ -1174,7 +1175,7 @@ var SCENARIOS = [
     sos: { t: "step", danger: true, text: "Call 911 now.",
       more: ["If you have an EpiPen, use it now, the way you were shown.",
              "Loosen tight clothes. Don't drink anything."],
-      call: ["911", "mednote"],
+      call: ["911", "alert", "mednote"],
       calm: "Calling is exactly right. Help is on the way.",
       next: "sosend" },
     sosend: { t: "end", danger: true, level: "911", text: "Stay where you are until help comes. Then let someone on your list know.",
@@ -1225,7 +1226,7 @@ var SCENARIOS = [
     call: { t: "end", danger: true, level: "911", text: "Call 911 now.",
       more: ["If you have a medical note in My info, show it to the paramedics.",
              "Then let someone on your list know."],
-      call: ["911", "mednote", "people"] },
+      call: ["911", "alert", "mednote", "people"] },
     doc: { t: "ask", text: "Does any of this fit?",
       more: ["A fever above 104°F",
              "A bad headache with a stiff neck, or a new rash",
